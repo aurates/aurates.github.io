@@ -6,8 +6,12 @@ export type FontFamily = 'Inter' | 'Comic Sans MS';
 
 interface BetaSettings {
   bubbleColor: string;
+  bubbleOpacity: number;
   clockColor: string;
   holographicColor: string;
+  holoOpacity: number;
+  backgroundColor: string;
+  bgOpacity: number;
   snowDensity: number;
   snowSpeed: number;
   fallingTextStyle: FallingTextStyle;
@@ -25,8 +29,12 @@ interface BetaContextType {
 
 const defaultSettings: BetaSettings = {
   bubbleColor: '#3b82f6',
+  bubbleOpacity: 100,
   clockColor: '#ffffff',
   holographicColor: '#ffffff',
+  holoOpacity: 100,
+  backgroundColor: '#020617', // slate-950 default
+  bgOpacity: 100,
   snowDensity: 50,
   snowSpeed: 1,
   fallingTextStyle: 'default',

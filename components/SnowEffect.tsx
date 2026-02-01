@@ -19,7 +19,7 @@ const SnowEffect: React.FC = memo(() => {
     let height = window.innerHeight;
     
     // Reactive settings
-    const density = isBeta ? Math.min(settings.snowDensity, 200) : 50; // Cap for performance
+    const density = isBeta ? Math.min(settings.snowDensity, 500) : 80; // Increased for more snow
     const speedMult = isBeta ? settings.snowSpeed : 1;
 
     const createSnowflake = (initial = false) => ({

@@ -148,7 +148,9 @@ const App: React.FC = () => {
   return (
     <div 
       className={`relative h-[100dvh] w-full transition-colors duration-500 overflow-hidden flex flex-col items-center justify-center ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}
-      style={{ fontFamily: isBeta && settings.fontFamily !== 'Inter' ? settings.fontFamily : 'inherit' }}
+      style={{ 
+        fontFamily: isBeta && settings.fontFamily !== 'Inter' ? settings.fontFamily : 'inherit'
+      }}
     >
       
       <BubbleBackground 
@@ -157,6 +159,11 @@ const App: React.FC = () => {
       />
       
       {isSnowing && <SnowEffect />}
+      
+      {/* Snow Toggle - Only in dark mode, outside beta panel */}
+      {isDarkMode && !isBeta && (
+        <SnowToggle isSnowing={isSnowing} toggle={() => setIsSnowing(!isSnowing)} />
+      )}
       
       {/* Beta Panel Overlay */}
       <BetaConfigPanel isDarkMode={isDarkMode} isSnowing={isSnowing} toggleSnow={() => setIsSnowing(!isSnowing)} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { useBeta } from '../context/BetaContext';
 import { Sparkles, X } from 'lucide-react';
 
@@ -40,6 +40,85 @@ const hexToHue = (hex: string): number => {
   return Math.round(h * 360);
 };
 
+// Color Slider Component with real-time preview
+const ColorSlider: React.FC<{
+  label: string;
+  color: string;
+  onColorChange: (color: string) => void;
+  isDarkMode: boolean;
+}> = memo(({ label, color, onColorChange, isDarkMode }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [hue, setHue] = useState(() => hexToHue(color));
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  // Update hue when external color changes
+  useEffect(() => {
+    setHue(hexToHue(color));
+  }, [color]);
+
+  // Close on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleHueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const h = Number(e.target.value);
+    setHue(h);
+    onColorChange(hslToHex(h, 100, 50));
+  };
+
+  return (
+    <div className="relative" ref={pickerRef}>
+      <label className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-3">{label}</label>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full text-left px-4 py-3 rounded-2xl border flex items-center gap-3 transition-all duration-300 hover:scale-[1.01] beta-select-override ${isDarkMode ? 'border-white/10' : 'border-black/10'}`}
+      >
+        <div 
+          className="w-6 h-6 rounded-full border-2 border-white/30 shadow-lg"
+          style={{ backgroundColor: color }} 
+        />
+        <span className={`text-sm font-mono ${isDarkMode ? 'text-purple-300' : 'text-purple-900 font-black'}`}>
+          {color}
+        </span>
+      </button>
+
+      {/* Color Picker Dropdown */}
+      <div className={`absolute left-0 right-0 mt-2 p-4 rounded-3xl z-[120] transition-all duration-300 beta-picker-override ${
+        isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 pointer-events-none -translate-y-2 scale-95'
+      } ${isDarkMode ? 'shadow-2xl' : 'shadow-xl'}`}>
+        {/* Hue Slider */}
+        <div>
+          <div className="relative h-6">
+            <div 
+              className="absolute inset-0 rounded-full" 
+              style={{ background: 'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }} 
+            />
+            <input 
+              type="range" 
+              min="0" 
+              max="360" 
+              value={hue}
+              onChange={handleHueChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            <div 
+              className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-2 border-black/20 shadow-lg pointer-events-none"
+              style={{ left: `calc(${(hue / 360) * 100}% - 10px)` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSnowing, toggleSnow }) => {
   const { isBeta, toggleBeta, settings, updateSettings } = useBeta();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -47,18 +126,6 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
   const [isOpen, setIsOpen] = useState(true);
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  
-  // Color picker states - use local preview for smooth dragging
-  const [holoPickerOpen, setHoloPickerOpen] = useState(false);
-  const [bubblePickerOpen, setBubblePickerOpen] = useState(false);
-  const [holoHue, setHoloHue] = useState(() => hexToHue(settings.holographicColor));
-  const [bubbleHue, setBubbleHue] = useState(() => hexToHue(settings.bubbleColor));
-  const [previewHoloColor, setPreviewHoloColor] = useState(settings.holographicColor);
-  const [previewBubbleColor, setPreviewBubbleColor] = useState(settings.bubbleColor);
-  
-  const holoPickerRef = useRef<HTMLDivElement>(null);
-  const bubblePickerRef = useRef<HTMLDivElement>(null);
-  const isDraggingRef = useRef(false);
 
   useEffect(() => {
     if (isBeta) {
@@ -71,23 +138,7 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
     }
   }, [isBeta]);
 
-  // Close pickers on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (holoPickerRef.current && !holoPickerRef.current.contains(event.target as Node)) {
-        setHoloPickerOpen(false);
-      }
-      if (bubblePickerRef.current && !bubblePickerRef.current.contains(event.target as Node)) {
-        setBubblePickerOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   if (!shouldRender) return null;
-
-  const presetColors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#00ffff', '#0088ff', '#8800ff', '#ff00ff', '#ffffff', '#3b82f6'];
 
   return (
     <div 
@@ -125,7 +176,7 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
 
       {/* Main Panel */}
       <div 
-        className={`w-72 md:w-80 p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] glass-liquid-intense border transition-all duration-300 ease-out transform origin-bottom-right max-h-[75vh] md:max-h-[85vh] overflow-y-auto no-scrollbar ${
+        className={`w-72 md:w-80 p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] glass-liquid-intense border transition-all duration-300 ease-out transform origin-bottom-right max-h-[75vh] md:max-h-[85vh] overflow-y-auto no-scrollbar select-none ${
           isAnimating && isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95 pointer-events-none'
         } ${isDarkMode ? 'text-white border-white/10' : 'text-slate-950 border-black/10'}`}
       >
@@ -169,142 +220,20 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
           </div>
 
           {/* Holo Color */}
-          <div className="relative" ref={holoPickerRef}>
-            <label className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-3">Holo Color</label>
-            <button
-              onClick={() => { setHoloPickerOpen(!holoPickerOpen); setBubblePickerOpen(false); }}
-              className={`w-full text-left px-4 py-3 rounded-2xl border flex items-center gap-3 transition-all duration-300 hover:scale-[1.01] beta-select-override ${isDarkMode ? 'border-white/10' : 'border-black/10'}`}
-            >
-              <div 
-                className="w-6 h-6 rounded-full border-2 border-white/30 shadow-lg"
-                style={{ backgroundColor: previewHoloColor }} 
-              />
-              <span className={`text-sm font-mono ${isDarkMode ? 'text-purple-300' : 'text-purple-900 font-black'}`}>
-                {previewHoloColor}
-              </span>
-            </button>
-
-            {/* Color Picker Dropdown */}
-            <div className={`absolute left-0 right-0 mt-2 p-4 rounded-3xl z-[120] transition-all duration-300 beta-picker-override ${
-              holoPickerOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 pointer-events-none -translate-y-2 scale-95'
-            } ${isDarkMode ? 'shadow-2xl' : 'shadow-xl'}`}>
-              {/* Hue Slider */}
-              <div className="relative h-6 mb-4">
-                <div 
-                  className="absolute inset-0 rounded-full" 
-                  style={{ background: 'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }} 
-                />
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="360" 
-                  value={holoHue}
-                  onMouseDown={() => { isDraggingRef.current = true; }}
-                  onTouchStart={() => { isDraggingRef.current = true; }}
-                  onInput={(e) => {
-                    const h = Number((e.target as HTMLInputElement).value);
-                    setHoloHue(h);
-                    setPreviewHoloColor(hslToHex(h, 100, 50));
-                  }}
-                  onMouseUp={() => { 
-                    isDraggingRef.current = false; 
-                    updateSettings({ holographicColor: previewHoloColor }); 
-                  }}
-                  onTouchEnd={() => { 
-                    isDraggingRef.current = false; 
-                    updateSettings({ holographicColor: previewHoloColor }); 
-                  }}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-2 border-black/20 shadow-lg pointer-events-none"
-                  style={{ left: `calc(${(holoHue / 360) * 100}% - 10px)` }}
-                />
-              </div>
-              {/* Presets */}
-              <div className="flex flex-wrap gap-2 justify-center">
-                {presetColors.map(c => (
-                  <button 
-                    key={c}
-                    onClick={() => { updateSettings({ holographicColor: c }); setHoloHue(hexToHue(c)); setPreviewHoloColor(c); }}
-                    className={`w-7 h-7 rounded-full border-2 hover:scale-110 transition-transform ${
-                      previewHoloColor === c ? 'border-white ring-2 ring-purple-400' : 'border-white/30'
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          <ColorSlider
+            label="Holo Color"
+            color={settings.holographicColor}
+            onColorChange={(color) => updateSettings({ holographicColor: color })}
+            isDarkMode={isDarkMode}
+          />
 
           {/* Bubble Tint */}
-          <div className="relative" ref={bubblePickerRef}>
-            <label className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-3">Bubble Tint</label>
-            <button
-              onClick={() => { setBubblePickerOpen(!bubblePickerOpen); setHoloPickerOpen(false); }}
-              className={`w-full text-left px-4 py-3 rounded-2xl border flex items-center gap-3 transition-all duration-300 hover:scale-[1.01] beta-select-override ${isDarkMode ? 'border-white/10' : 'border-black/10'}`}
-            >
-              <div 
-                className="w-6 h-6 rounded-full border-2 border-white/30 shadow-lg"
-                style={{ backgroundColor: previewBubbleColor }} 
-              />
-              <span className={`text-sm font-mono ${isDarkMode ? 'text-blue-300' : 'text-blue-900 font-black'}`}>
-                {previewBubbleColor}
-              </span>
-            </button>
-
-            {/* Color Picker Dropdown */}
-            <div className={`absolute left-0 right-0 mt-2 p-4 rounded-3xl z-[120] transition-all duration-300 beta-picker-override ${
-              bubblePickerOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 pointer-events-none -translate-y-2 scale-95'
-            } ${isDarkMode ? 'shadow-2xl' : 'shadow-xl'}`}>
-              {/* Hue Slider */}
-              <div className="relative h-6 mb-4">
-                <div 
-                  className="absolute inset-0 rounded-full" 
-                  style={{ background: 'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }} 
-                />
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="360" 
-                  value={bubbleHue}
-                  onMouseDown={() => { isDraggingRef.current = true; }}
-                  onTouchStart={() => { isDraggingRef.current = true; }}
-                  onInput={(e) => {
-                    const h = Number((e.target as HTMLInputElement).value);
-                    setBubbleHue(h);
-                    setPreviewBubbleColor(hslToHex(h, 100, 50));
-                  }}
-                  onMouseUp={() => { 
-                    isDraggingRef.current = false; 
-                    updateSettings({ bubbleColor: previewBubbleColor }); 
-                  }}
-                  onTouchEnd={() => { 
-                    isDraggingRef.current = false; 
-                    updateSettings({ bubbleColor: previewBubbleColor }); 
-                  }}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-                <div 
-                  className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-2 border-black/20 shadow-lg pointer-events-none"
-                  style={{ left: `calc(${(bubbleHue / 360) * 100}% - 10px)` }}
-                />
-              </div>
-              {/* Presets */}
-              <div className="flex flex-wrap gap-2 justify-center">
-                {presetColors.map(c => (
-                  <button 
-                    key={c}
-                    onClick={() => { updateSettings({ bubbleColor: c }); setBubbleHue(hexToHue(c)); setPreviewBubbleColor(c); }}
-                    className={`w-7 h-7 rounded-full border-2 hover:scale-110 transition-transform ${
-                      previewBubbleColor === c ? 'border-white ring-2 ring-blue-400' : 'border-white/30'
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          <ColorSlider
+            label="Bubble Tint"
+            color={settings.bubbleColor}
+            onColorChange={(color) => updateSettings({ bubbleColor: color })}
+            isDarkMode={isDarkMode}
+          />
 
           {/* Snow Settings (Dark Mode Only) */}
           {isDarkMode && (
@@ -319,7 +248,7 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
                 <input 
                   type="range" 
                   min="0" 
-                  max="300" 
+                  max="500" 
                   value={settings.snowDensity}
                   onChange={(e) => updateSettings({ snowDensity: Number(e.target.value) })}
                   className="w-full h-2 rounded-full appearance-none cursor-pointer bg-white/10 accent-blue-400"
@@ -351,17 +280,17 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
                 if(window.confirm("Reset all designer settings?")) {
                   updateSettings({
                     bubbleColor: '#3b82f6',
+                    bubbleOpacity: 100,
                     clockColor: '#ffffff',
                     holographicColor: '#ffffff',
+                    holoOpacity: 100,
+                    backgroundColor: '#020617',
+                    bgOpacity: 100,
                     snowDensity: 50,
                     snowSpeed: 1,
                     fallingTextStyle: 'default',
                     fontFamily: 'Inter',
                   });
-                  setHoloHue(0);
-                  setBubbleHue(hexToHue('#3b82f6'));
-                  setPreviewHoloColor('#ffffff');
-                  setPreviewBubbleColor('#3b82f6');
                 }
               }}
               className={`w-full py-2 text-[10px] font-bold uppercase tracking-[0.15em] opacity-50 hover:opacity-80 transition-opacity`}
