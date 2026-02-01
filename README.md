@@ -4,44 +4,52 @@ This project is fully powered by **Gemini 3 Flash**, an advanced AI model that c
 
 Other than this sentence, I didn't write a single word of code. Even this README.md is AI generated.
 
-## ✨ Core Features
+---
 
-- **Interactive Glassmorphism UI**: A high-fidelity "Liquid Glass" interface utilizing Tailwind CSS 4.0 and advanced CSS backdrop-filters.
-- **Dynamic View Switching**: Toggle between a minimalist branding "Home" view and a sophisticated "Clock" view using a hidden **3x spacebar/tap** interaction.
-- **Holographic Falling Text**: A stunning Discord-style shimmering instruction text that glides diagonally across the screen with a fluid color-bending effect.
-- **Smart Theming**: Full Light/Dark mode support with persistent state via secure cookies.
-- **Ambient Backgrounds**: Animated bubble physics and a toggleable "Snow" effect for the dark mode aesthetic.
-- **World Clock Integration**: A customizable clock with support for multiple UTC timezones and date formatting.
-- **Mobile-Responsive Design**: Tailored instructions and UI scaling for both desktop and touch-based devices.
+A minimalist personal landing page featuring a "Liquid Glass" aesthetic with animated backgrounds and hidden view switching.
 
-## 🏗️ Project Structure
+## Tech Stack
 
-The codebase is built on **React 19** and **Vite 6**, ensuring maximum performance and a modern development experience.
+- **React 19** – UI framework
+- **Vite 6** – Build tool & dev server
+- **TypeScript** – Type safety
+- **Tailwind CSS 4.0** – Utility-first styling
+- **js-cookie** – Persistent settings
+- **Lucide React** – Icon library
 
-```text
-aurates.github.io/
-├── components/          # Reusable React components (Clock, Modals, Effects)
-├── constants.tsx        # Centralized SVG icons and application constants
-├── App.tsx             # Main application logic and state management
-├── index.tsx           # React entry point
-├── index.html          # Global CSS animations and holographic definitions
-├── index.css           # Tailwind CSS 4.0 architecture
-└── vite.config.ts      # Optimized build configuration for GitHub Pages
+## Project Structure
+
+```
+├── App.tsx              # Main app logic & state
+├── index.tsx            # React entry point
+├── index.css            # Tailwind config & animations
+├── constants.tsx        # SVG icons
+├── components/
+│   ├── BubbleBackground.tsx
+│   ├── SnowEffect.tsx
+│   ├── FallingText.tsx
+│   ├── ClockPanel.tsx
+│   ├── LiquidGlassToggle.tsx
+│   ├── SettingsDropdown.tsx
+│   └── ...
+└── vite.config.ts       # Build configuration
 ```
 
-## 🎨 Design Philosophy
+## Design Philosophy
 
-### 1. Liquid Glass Aesthetic
-The design centers around transparency and fluidity. We've eliminated traditional "boxes" in favor of floating elements that interact with the background. The clock settings panel, for instance, uses 100% transparency to let the ambient bubbles move behind it without distortion.
+- **Glassmorphism**: Translucent panels with backdrop blur create depth without visual clutter
+- **Hidden Interactions**: Complex features accessible via tap patterns (3x space = Clock view)
+- **Ambient Motion**: Floating bubbles and snow effects add life without distraction
+- **Progressive Entrance**: Elements scale up from 85% opacity for a dimensional feel
 
-### 2. The "Holo" Experience
-Inspired by Discord's role shimmering, the holographic text uses a multi-stop color gradient (`Pink` -> `Purple` -> `Cyan`) moving across a `300%` background size. A custom `cubic-bezier` timing function gives the colors a "liquid" feel as they bend through the letters.
+## Core Features
 
-### 3. Progressive Entrance
-The site features a staggered "from the back" entrance animation. Elements scale up from `85%` as they fade in, creating a sense of depth and dimensionality immediately upon launch.
-
-### 4. Hidden Depth
-Rather than cluttering the UI, complex settings and view toggles are hidden behind intuitive keyboard macros and tap patterns, keeping the initial experience clean and focused.
+- 🎨 Light/Dark theme with cookie persistence (defaults to light)
+- ⏰ Hidden Clock view (3x spacebar/tap to toggle)
+- ❄️ Toggleable snow effect (dark mode only)
+- 🫧 Animated bubble background
+- 📱 Fully responsive design
 
 ---
-*Built with passion and Gemini 3 Flash.*
+
+*Built with passion and AI.*

@@ -24,10 +24,10 @@ const setCookie = (name: string, value: string) => {
 };
 
 const App: React.FC = () => {
-  // Theme State
+  // Theme State - Default to light mode
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = getCookie('theme');
-    return saved ? saved === 'dark' : true;
+    return saved ? saved === 'dark' : false;
   });
   
   // View State (home | clock)
