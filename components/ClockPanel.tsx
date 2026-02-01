@@ -76,7 +76,7 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
       
       <div className={`overflow-hidden transition-all duration-500 ease-in-out ${showDate ? 'max-h-40 opacity-100 mt-2 md:mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
         <p className={`text-lg md:text-3xl font-bold tracking-wide px-8 py-2 md:py-3 transition-colors duration-700 ${
-          isDarkMode ? 'text-blue-400' : 'text-slate-900'
+          isDarkMode ? 'text-white' : 'text-slate-900'
         }`}>
           {getDateString()}
         </p>
