@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useBeta } from './context/BetaContext';
+import BetaConfigPanel from './components/BetaConfigPanel';
 import BubbleBackground from './components/BubbleBackground';
 import SocialLink from './components/SocialLink';
 import LiquidGlassToggle from './components/LiquidGlassToggle';
@@ -24,6 +26,8 @@ const setCookie = (name: string, value: string) => {
 };
 
 const App: React.FC = () => {
+  const { isBeta, clickCount, incrementClick, settings } = useBeta();
+
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = getCookie('theme');
@@ -142,12 +146,21 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`relative h-[100dvh] w-full transition-colors duration-500 overflow-hidden flex flex-col items-center justify-center ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}>
+    <div 
+      className={`relative h-[100dvh] w-full transition-colors duration-500 overflow-hidden flex flex-col items-center justify-center ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}
+      style={{ fontFamily: isBeta && settings.fontFamily !== 'Inter' ? settings.fontFamily : 'inherit' }}
+    >
       
-      <BubbleBackground isDarkMode={isDarkMode} />
+      <BubbleBackground 
+        isDarkMode={isDarkMode} 
+        customBubbleColor={isBeta ? settings.bubbleColor : undefined}
+      />
       
       {isSnowing && <SnowEffect />}
       
+      {/* Beta Panel Overlay */}
+      <BetaConfigPanel isDarkMode={isDarkMode} isSnowing={isSnowing} toggleSnow={() => setIsSnowing(!isSnowing)} />
+
       {showFallingText && view === 'home' && (
         <FallingText 
           isDarkMode={isDarkMode} 
@@ -156,10 +169,6 @@ const App: React.FC = () => {
       )}
 
       <LiquidGlassToggle isDarkMode={isDarkMode} toggle={() => setIsDarkMode(!isDarkMode)} />
-      
-      {isDarkMode && (
-        <SnowToggle isSnowing={isSnowing} toggle={() => setIsSnowing(!isSnowing)} />
-      )}
 
       {view === 'clock' && (
         <SettingsDropdown 
@@ -188,7 +197,13 @@ const App: React.FC = () => {
             <div className="flex flex-col items-center gap-12 md:gap-16">
               {/* Using leading-none and flex layout to ensure perfect 1:1 vertical spacing between elements */}
               <div className="entrance-anim flex flex-col items-center leading-none">
-                <h1 className={`text-7xl md:text-9xl font-bold tracking-tighter select-none transition-colors duration-500 ${isDarkMode ? 'text-white' : 'text-black'}`}>
+                <h1 
+                  className={`text-7xl md:text-9xl font-bold tracking-tighter select-none transition-colors duration-500 ${isDarkMode ? 'text-white' : 'text-black'}`}
+                  style={{ 
+                    color: isBeta && settings.holographicColor !== '#ffffff' ? settings.holographicColor : undefined,
+                    fontFamily: isBeta ? settings.fontFamily : 'inherit'
+                  }}
+                >
                   Dylan
                 </h1>
               </div>
@@ -230,12 +245,27 @@ const App: React.FC = () => {
       </main>
 
       <footer className="absolute bottom-8 w-full text-center z-10">
-        <p className={`text-lg font-medium tracking-tight flex items-center justify-center gap-2 transition-colors duration-500 ${isDarkMode ? 'text-slate-500/80' : 'text-slate-400'}`}>
+        <p 
+          className={`text-lg font-medium tracking-tight flex items-center justify-center gap-2 transition-colors duration-500 select-none ${isDarkMode ? 'text-slate-500/80' : 'text-slate-400'}`}
+          style={{ fontFamily: isBeta ? settings.fontFamily : 'inherit' }}
+        >
           2026 
-          <span className="text-red-500 text-2xl drop-shadow-sm">❤</span> 
+          <span 
+            className="text-red-500 text-2xl drop-shadow-sm cursor-pointer hover:scale-125 transition-transform active:scale-90"
+            onClick={incrementClick}
+          >
+            ❤
+          </span> 
           Dylan
         </p>
       </footer>
+      <style>{`
+        @keyframes chroma {
+          0% { filter: hue-rotate(0deg); }
+          100% { filter: hue-rotate(360deg); }
+        }
+        .animate-chroma { animation: chroma 3s linear infinite; }
+      `}</style>
     </div>
   );
 };

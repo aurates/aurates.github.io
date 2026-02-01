@@ -1,58 +1,78 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
+import { useBeta } from '../context/BetaContext';
 
 interface FallingTextProps {
   isDarkMode: boolean;
   onComplete: () => void;
 }
 
-const FallingText: React.FC<FallingTextProps> = ({ isDarkMode, onComplete }) => {
-  // Default to PC message as a safe fallback for initial render
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
-  const [isHolographic] = useState(true);
+const FallingText: React.FC<FallingTextProps> = memo(({ isDarkMode, onComplete }) => {
+  const { isBeta, settings } = useBeta();
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const checkDevice = () => {
-      // 1. Check for Touch Support (Most reliable for "Quickly touch the screen")
-      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      
-      // 2. Check User Agent for common mobile/tablet strings
-      const ua = navigator.userAgent;
-      const isMobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-      
-      // 3. Screen width check (Common tablets/phones are < 1024px)
-      const isSmallScreen = window.innerWidth <= 1024;
-      
-      // We assume mobile/tablet if it has touch AND is either a mobile UA or a small screen
-      setIsMobileOrTablet(hasTouch && (isMobileRegex || isSmallScreen));
+    const check = () => {
+      setIsMobile('ontouchstart' in window || window.innerWidth < 1024);
     };
-
-    checkDevice();
-    window.addEventListener('resize', checkDevice);
-    return () => window.removeEventListener('resize', checkDevice);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Instruction strings exactly as requested
-  const pcMessage = "Quickly press the space bar three times for a surprise! :D";
-  const mobileMessage = "Quickly touch the screen three times for a surprise! :D";
+  const message = isMobile 
+    ? "Quickly touch the screen three times for a surprise! :D" 
+    : "Quickly press the space bar three times for a surprise! :D";
 
-  const message = isMobileOrTablet ? mobileMessage : pcMessage;
+  const getStyles = (): React.CSSProperties => {
+    if (!isBeta) return {};
+    
+    switch (settings.fallingTextStyle) {
+      case 'matrix':
+        return {
+          fontFamily: "'Courier New', monospace",
+          color: '#00ff41',
+          textShadow: '0 0 5px #00ff41',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase'
+        };
+      case 'cyber':
+        return {
+          fontFamily: "Arial, sans-serif",
+          color: '#0ff',
+          textShadow: '0 0 5px #0ff, 0 0 10px #f0f',
+          letterSpacing: '2px',
+          fontWeight: 'bold',
+          textTransform: 'uppercase'
+        };
+      case 'outrun':
+        return {
+          fontFamily: "Impact, sans-serif",
+          background: 'linear-gradient(to bottom, #ff00de, #00eaff)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          fontStyle: 'italic',
+          letterSpacing: '1px'
+        };
+      default:
+        if (settings.holographicColor !== '#ffffff') {
+           return {
+             color: settings.holographicColor,
+             textShadow: `0 0 10px ${settings.holographicColor}`
+           };
+        }
+        return {};
+    }
+  };
+
+  const baseClass = "fixed top-[30%] -translate-y-1/2 left-0 pointer-events-none z-50 whitespace-nowrap text-2xl md:text-4xl font-bold animate-text-fall";
+  const colorClass = isBeta && settings.fallingTextStyle !== 'default' 
+    ? '' 
+    : (isDarkMode ? 'text-white/20' : 'text-black/20');
 
   return (
-    <div 
-      onAnimationEnd={onComplete}
-      className="fixed top-[25%] left-0 pointer-events-none z-0 whitespace-nowrap text-xl md:text-2xl font-medium animate-text-fall"
-      style={{ animationDuration: '20s' }}
-    >
-      <span className={
-        isHolographic 
-          ? 'animate-holo' 
-          : (isDarkMode ? 'text-slate-700' : 'text-slate-300')
-      }>
-        {message}
-      </span>
+    <div className={`${baseClass} ${colorClass}`} style={getStyles()} onAnimationEnd={onComplete}>
+      {message}
     </div>
   );
-};
-
+});
 export default FallingText;

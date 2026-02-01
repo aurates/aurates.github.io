@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useBeta } from '../context/BetaContext';
 
 interface ClockPanelProps {
   isDarkMode: boolean;
@@ -10,6 +11,7 @@ interface ClockPanelProps {
 
 const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, timezone }) => {
   const [time, setTime] = useState(new Date());
+  const { isBeta, settings } = useBeta();
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -55,6 +57,19 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
   const { mainTime, seconds } = getTimeParts();
   const showSeconds = format.includes('ss');
 
+  const getTextStyle = () => {
+    if (!isBeta) return {};
+    
+    // Use holographicColor for clock text when in beta
+    if (settings.holographicColor && settings.holographicColor !== '#ffffff') {
+      return { color: settings.holographicColor };
+    }
+    
+    return {};
+  };
+
+  const customStyle = getTextStyle();
+
   return (
     <div className="flex flex-col items-center justify-center select-none w-full max-w-full overflow-hidden px-4 md:px-10">
       <div 
@@ -64,7 +79,8 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
         style={{
           fontSize: 'clamp(3rem, 18vw, 15vw)',
           fontVariantNumeric: 'tabular-nums',
-          lineHeight: 0.95
+          lineHeight: 0.95,
+          ...customStyle
         }}
       >
         <span>{mainTime}</span>
@@ -77,7 +93,9 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
       <div className={`overflow-hidden transition-all duration-500 ease-in-out ${showDate ? 'max-h-40 opacity-100 mt-2 md:mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
         <p className={`text-lg md:text-3xl font-bold tracking-wide px-8 py-2 md:py-3 transition-colors duration-700 ${
           isDarkMode ? 'text-white' : 'text-slate-900'
-        }`}>
+        }`}
+        style={customStyle}
+        >
           {getDateString()}
         </p>
       </div>

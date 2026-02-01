@@ -1,91 +1,80 @@
+import React, { useEffect, useRef, memo } from 'react';
+import { useBeta } from '../context/BetaContext';
 
-import React, { useEffect, useRef } from 'react';
-
-const SnowEffect: React.FC = () => {
+// Memoized to prevent unnecessary re-renders
+const SnowEffect: React.FC = memo(() => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { isBeta, settings } = useBeta();
+  const animationRef = useRef<number>(0);
+  const snowflakesRef = useRef<any[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    let animationFrameId: number;
     let width = window.innerWidth;
     let height = window.innerHeight;
+    
+    // Reactive settings
+    const density = isBeta ? Math.min(settings.snowDensity, 200) : 50; // Cap for performance
+    const speedMult = isBeta ? settings.snowSpeed : 1;
 
-    const snowflakes: Snowflake[] = [];
-    const snowflakeCount = 150;
-
-    class Snowflake {
-      x: number = 0;
-      y: number = 0;
-      radius: number = 0;
-      speed: number = 0;
-      wind: number = 0;
-      opacity: number = 0;
-
-      constructor() {
-        this.reset();
-      }
-
-      reset() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * -height;
-        this.radius = Math.random() * 3 + 1;
-        this.speed = Math.random() * 1 + 0.5;
-        this.wind = Math.random() * 0.5 - 0.25;
-        this.opacity = Math.random() * 0.5 + 0.3;
-      }
-
-      update() {
-        this.y += this.speed;
-        this.x += this.wind;
-
-        if (this.y > height) {
-          this.reset();
-        }
-      }
-
-      draw(context: CanvasRenderingContext2D) {
-        context.beginPath();
-        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        context.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-        context.fill();
-      }
-    }
+    const createSnowflake = (initial = false) => ({
+      x: Math.random() * width,
+      y: initial ? Math.random() * height : Math.random() * -50,
+      radius: Math.random() * 2.5 + 0.5,
+      speed: (Math.random() * 0.8 + 0.3) * speedMult,
+      wind: Math.random() * 0.3 - 0.15,
+      opacity: Math.random() * 0.4 + 0.2,
+    });
 
     const init = () => {
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
-      
-      snowflakes.length = 0;
-      for (let i = 0; i < snowflakeCount; i++) {
-        snowflakes.push(new Snowflake());
-      }
+      snowflakesRef.current = Array.from({ length: density }, () => createSnowflake(true));
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
-      snowflakes.forEach((snowflake) => {
-        snowflake.update();
-        snowflake.draw(ctx);
-      });
-      animationFrameId = requestAnimationFrame(animate);
+      
+      for (const flake of snowflakesRef.current) {
+        flake.y += flake.speed;
+        flake.x += flake.wind;
+        
+        if (flake.y > height) {
+          Object.assign(flake, createSnowflake());
+        }
+        
+        ctx.beginPath();
+        ctx.arc(flake.x, flake.y, flake.radius, 0, 6.28);
+        ctx.fillStyle = `rgba(255,255,255,${flake.opacity})`;
+        ctx.fill();
+      }
+      
+      animationRef.current = requestAnimationFrame(animate);
     };
 
-    window.addEventListener('resize', init);
+    const handleResize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    };
+
+    window.addEventListener('resize', handleResize);
     init();
     animate();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', init);
+      cancelAnimationFrame(animationRef.current);
+      window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [settings.snowDensity, settings.snowSpeed, isBeta]);
 
   return (
     <canvas
@@ -94,6 +83,6 @@ const SnowEffect: React.FC = () => {
       style={{ mixBlendMode: 'screen' }}
     />
   );
-};
+});
 
 export default SnowEffect;
