@@ -182,9 +182,9 @@ const App: React.FC = () => {
       />
 
       <main className="relative z-10 w-full flex flex-col items-center text-center px-4">
-        <div className="relative w-full flex justify-center items-center h-[50vh] md:h-[60vh]">
+        <div className="relative w-full grid place-items-center">
           {/* Home View Container */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${view === 'home' ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none translate-y-4'}`}>
+          <div className={`col-start-1 row-start-1 w-full flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${view === 'home' ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none translate-y-4'}`}>
             <div className="flex flex-col items-center gap-12 md:gap-16">
               {/* Using leading-none and flex layout to ensure perfect 1:1 vertical spacing between elements */}
               <div className="entrance-anim flex flex-col items-center leading-none">
@@ -218,7 +218,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Clock View Container */}
-          <div className={`absolute inset-0 flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${view === 'clock' ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-105 pointer-events-none -translate-y-4'}`}>
+          <div className={`col-start-1 row-start-1 w-full flex flex-col items-center justify-center transition-all duration-500 ease-in-out ${view === 'clock' ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-105 pointer-events-none -translate-y-4'}`}>
             <ClockPanel 
               isDarkMode={isDarkMode}
               format={clockFormat}
