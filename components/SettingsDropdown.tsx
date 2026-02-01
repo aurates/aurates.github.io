@@ -94,7 +94,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
                         setTimezone(tz.value);
                         setIsTzListOpen(false);
                       }}
-                      className={`w-full text-left px-6 py-4 text-sm font-bold transition-all duration-200 ${timezone === tz.value ? (isDarkMode ? 'bg-blue-500/80 text-white' : 'bg-blue-600 text-white') : (isDarkMode ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-slate-900')}`}
+                      className={`w-full text-left px-6 py-4 text-sm font-bold transition-all duration-200 ${timezone === tz.value ? (isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-600 text-white') : (isDarkMode ? 'hover:bg-white/10 text-white' : 'hover:bg-black/5 text-slate-900')}`}
                     >
                       {tz.label}
                     </button>
@@ -161,21 +161,25 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
           box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3) !important;
         }
 
-        /* Specific override for the internal list - Much more solid to prevent text bleeding */
+        /* Specific override for the internal list - Liquid glass with readable text */
         .tz-select-override, .tz-list-override {
-          background: rgba(255, 255, 255, 0.99) !important;
-          backdrop-filter: blur(120px) saturate(200%) !important;
-          -webkit-backdrop-filter: blur(120px) saturate(200%) !important;
-          border: 1px solid rgba(0, 0, 0, 0.1) !important;
-          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1) !important;
+          background: rgba(240, 245, 250, 0.85) !important;
+          backdrop-filter: blur(24px) saturate(180%) !important;
+          -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.3) !important;
+          box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
         }
 
         .dark .tz-select-override, .dark .tz-list-override {
-          background: rgba(15, 23, 42, 0.99) !important;
-          backdrop-filter: blur(160px) saturate(220%) !important;
-          -webkit-backdrop-filter: blur(160px) saturate(220%) !important;
-          border: 1px solid rgba(255, 255, 255, 0.1) !important;
-          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4) !important;
+          background: rgba(10, 18, 32, 0.88) !important;
+          backdrop-filter: blur(24px) saturate(200%) !important;
+          -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
         }
 
         .no-scrollbar::-webkit-scrollbar {

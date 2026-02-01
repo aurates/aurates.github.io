@@ -58,55 +58,29 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
   return (
     <div className="flex flex-col items-center justify-center select-none w-full max-w-full overflow-hidden px-4 md:px-10">
       <div 
-        className={`font-black tracking-tight glass-text flex items-center justify-center py-4 transition-colors duration-700 will-change-[filter] ${
-          isDarkMode ? 'text-white/80' : 'text-slate-900/95'
+        className={`font-black tracking-tight flex items-center justify-center py-4 transition-colors duration-700 ${
+          isDarkMode ? 'text-white' : 'text-slate-900'
         }`}
         style={{
           fontSize: 'clamp(3rem, 18vw, 15vw)',
-          filter: isDarkMode 
-            ? 'drop-shadow(0 10px 20px rgba(255,255,255,0.05)) drop-shadow(0 20px 40px rgba(0,0,0,0.4))' 
-            : 'drop-shadow(0 10px 30px rgba(0,0,0,0.15))',
-          paddingRight: '0.05em' // Minor offset to prevent italic-like clipping
+          fontVariantNumeric: 'tabular-nums',
+          lineHeight: 0.95
         }}
       >
-        <div className="flex items-center justify-center">
-          <span className="shrink-0">{mainTime}</span>
-          <div className={`overflow-hidden transition-[max-width,opacity,margin] duration-500 ease-in-out flex items-center shrink-0 ${showSeconds ? 'max-w-[40vw] opacity-100 ml-[1.5vw]' : 'max-w-0 opacity-0 ml-0'}`}>
-            <span className="opacity-40 text-[0.7em] font-light">:</span>
-            <span className="tabular-nums">{seconds}</span>
-          </div>
+        <span>{mainTime}</span>
+        <div className={`overflow-hidden transition-[max-width,opacity,margin] duration-500 ease-in-out flex items-center ${showSeconds ? 'max-w-[40vw] opacity-100 ml-[1.5vw]' : 'max-w-0 opacity-0 ml-0'}`}>
+          <span className="opacity-40 text-[0.7em] font-light">:</span>
+          <span>{seconds}</span>
         </div>
       </div>
       
       <div className={`overflow-hidden transition-all duration-500 ease-in-out ${showDate ? 'max-h-40 opacity-100 mt-2 md:mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
-        <div 
-          className={`text-lg md:text-3xl font-bold tracking-wide px-8 py-2 md:py-3 transition-all duration-700 ${
-            isDarkMode ? 'text-blue-300/90' : 'text-slate-900'
-          }`}
-          style={{ background: 'transparent' }}
-        >
+        <p className={`text-lg md:text-3xl font-bold tracking-wide px-8 py-2 md:py-3 transition-colors duration-700 ${
+          isDarkMode ? 'text-blue-400' : 'text-slate-900'
+        }`}>
           {getDateString()}
-        </div>
+        </p>
       </div>
-
-      <style>{`
-        /* Default styles are Light Mode (logical fix) */
-        .glass-text {
-          position: relative;
-          -webkit-text-stroke: 1px rgba(0, 0, 0, 0.05);
-          text-shadow: 0 0 30px rgba(0, 0, 0, 0.03);
-          font-variant-numeric: tabular-nums;
-          white-space: nowrap;
-          line-height: 0.95;
-          transition: color 0.7s ease, filter 0.7s ease, font-size 0.5s ease;
-        }
-
-        /* Dark Mode overrides */
-        .dark .glass-text {
-          -webkit-text-stroke: 1px rgba(255, 255, 255, 0.05);
-          text-shadow: 0 0 60px rgba(56, 189, 248, 0.15);
-        }
-      `}</style>
     </div>
   );
 };
