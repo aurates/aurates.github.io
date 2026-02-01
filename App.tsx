@@ -142,7 +142,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`relative min-h-screen w-full transition-colors duration-500 overflow-hidden flex flex-col items-center justify-center ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}>
+    <div className={`relative h-[100dvh] w-full transition-colors duration-500 overflow-hidden flex flex-col items-center justify-center ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}>
       
       <BubbleBackground isDarkMode={isDarkMode} />
       
