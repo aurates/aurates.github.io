@@ -66,7 +66,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
       </button>
 
       {/* Main Settings Dropdown Panel */}
-      <div className={`absolute top-16 md:top-20 left-0 w-72 md:w-80 p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] glass-liquid-intense transition-all duration-300 ease-out transform origin-top-left max-h-[75vh] md:max-h-[85vh] overflow-y-auto no-scrollbar ${isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-95 pointer-events-none'} ${isDarkMode ? 'text-white' : 'text-slate-950'}`}>
+      <div className={`absolute top-16 md:top-20 left-0 w-72 md:w-80 p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] glass-liquid-intense border transition-all duration-300 ease-out transform origin-top-left max-h-[75vh] md:max-h-[85vh] overflow-y-auto no-scrollbar ${isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-95 pointer-events-none'} ${isDarkMode ? 'text-white border-white/10' : 'text-slate-950 border-black/10'}`}>
         <div className="space-y-6 md:space-y-8">
           {/* Timezone Custom Dropdown */}
           <div className="relative">
@@ -74,7 +74,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
             <div className="relative">
               <button
                 onClick={() => setIsTzListOpen(!isTzListOpen)}
-                className={`w-full text-left px-4 py-3 rounded-2xl glass-liquid flex items-center justify-between transition-all duration-300 hover:scale-[1.01] ${isDarkMode ? 'text-blue-300' : 'text-blue-900 font-black'}`}
+                className={`w-full text-left px-4 py-3 rounded-2xl glass-liquid border flex items-center justify-between transition-all duration-300 hover:scale-[1.01] ${isDarkMode ? 'border-white/5 text-blue-300' : 'border-black/10 text-blue-900 font-black'}`}
               >
                 <span className="text-sm">{selectedTzLabel}</span>
                 <svg className={`w-4 h-4 transition-transform duration-300 ${isTzListOpen ? 'rotate-180' : ''} fill-current`} viewBox="0 0 20 20">
@@ -84,7 +84,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
 
               {/* Timezone Options List */}
               <div 
-                className={`absolute left-0 right-0 mt-2 max-h-48 overflow-y-auto rounded-3xl z-[120] transition-all duration-300 no-scrollbar overflow-hidden glass-liquid-intense ${isTzListOpen ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none -translate-y-2'} ${isDarkMode ? 'tz-list-dark-override shadow-2xl' : 'shadow-xl'}`} 
+                className={`absolute left-0 right-0 mt-2 max-h-48 overflow-y-auto rounded-3xl z-[120] transition-all duration-300 no-scrollbar overflow-hidden tz-list-override ${isTzListOpen ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none -translate-y-2'} ${isDarkMode ? 'shadow-2xl' : 'shadow-xl'}`} 
               >
                 <div className="w-full flex flex-col p-0">
                   {utcTimezones.map(tz => (
@@ -145,30 +145,37 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
         </div>
       </div>
       <style>{`
-        /* Base styles are Light Mode - Fully transparent */
+        /* Base styles are Light Mode - Restored Setting Dropdown blurry level */
         .glass-liquid-intense {
-          backdrop-filter: none !important;
-          -webkit-backdrop-filter: none !important;
-          background: transparent !important;
-          box-shadow: none !important;
-          border: none !important;
+          backdrop-filter: blur(16px) saturate(180%) contrast(1.02) !important;
+          -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.02) !important;
+          background: rgba(255, 255, 255, 0.05) !important;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
         }
 
-        /* Dark Mode overrides - Fully transparent */
+        /* Dark Mode overrides - Restored Setting Dropdown blurry level */
         .dark .glass-liquid-intense {
-          backdrop-filter: none !important;
-          -webkit-backdrop-filter: none !important;
-          background: transparent !important;
-          box-shadow: none !important;
-          border: none !important;
+          backdrop-filter: blur(24px) saturate(200%) contrast(1.1) !important;
+          -webkit-backdrop-filter: blur(24px) saturate(200%) contrast(1.1) !important;
+          background: rgba(0, 0, 0, 0.1) !important;
+          box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3) !important;
         }
 
-        /* Specific override for the internal list - Fully transparent */
-        .dark .tz-list-dark-override {
-          background: transparent !important;
-          backdrop-filter: none !important;
-          -webkit-backdrop-filter: none !important;
-          border: none !important;
+        /* Specific override for the internal list - Much more solid to prevent text bleeding */
+        .tz-list-override {
+          background: rgba(248, 250, 252, 0.96) !important;
+          backdrop-filter: blur(40px) saturate(200%) !important;
+          -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+          border: 1px solid rgba(0, 0, 0, 0.08) !important;
+          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .dark .tz-list-override {
+          background: rgba(15, 23, 42, 0.98) !important;
+          backdrop-filter: blur(50px) saturate(220%) !important;
+          -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
+          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5) !important;
         }
 
         .no-scrollbar::-webkit-scrollbar {
