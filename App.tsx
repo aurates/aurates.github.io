@@ -156,6 +156,7 @@ const App: React.FC = () => {
       <BubbleBackground 
         isDarkMode={isDarkMode} 
         customBubbleColor={isBeta ? settings.bubbleColor : undefined}
+        isPaused={isBeta ? settings.bubblesPaused : undefined}
       />
       
       {isSnowing && <SnowEffect />}

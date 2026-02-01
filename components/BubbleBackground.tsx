@@ -3,8 +3,9 @@ import React, { useRef, useEffect, useState, memo } from 'react';
 interface BubbleBackgroundProps {
   isDarkMode: boolean;
   isSurprise?: boolean;
-  // Beta-only prop - only pass when in beta mode
+  // Beta-only props - only pass when in beta mode
   customBubbleColor?: string;
+  isPaused?: boolean;
 }
 
 interface BubbleData {
@@ -22,7 +23,8 @@ const Bubble = memo<{
   bubble: BubbleData;
   isDarkMode: boolean;
   customColor?: string;
-}>(({ bubble, isDarkMode, customColor }) => {
+  isPaused?: boolean;
+}>(({ bubble, isDarkMode, customColor, isPaused }) => {
   const darkColors = ['rgba(30,41,59,0.6)', 'rgba(51,65,85,0.6)', 'rgba(56,189,248,0.1)'];
   const lightColors = ['rgba(224,242,254,0.6)', 'rgba(186,230,253,0.6)'];
   const defaultColors = isDarkMode ? darkColors : lightColors;
@@ -44,12 +46,13 @@ const Bubble = memo<{
         backgroundColor: bgColor,
         opacity,
         willChange: 'transform',
+        animationPlayState: isPaused ? 'paused' : 'running',
       }}
     />
   );
 });
 
-const BubbleBackground: React.FC<BubbleBackgroundProps> = memo(({ isDarkMode, isSurprise, customBubbleColor }) => {
+const BubbleBackground: React.FC<BubbleBackgroundProps> = memo(({ isDarkMode, isSurprise, customBubbleColor, isPaused }) => {
   const bubblesData = useRef<BubbleData[]>([]);
   const [key, setKey] = useState(0);
 
@@ -80,6 +83,7 @@ const BubbleBackground: React.FC<BubbleBackgroundProps> = memo(({ isDarkMode, is
           bubble={bubble}
           isDarkMode={isDarkMode}
           customColor={customBubbleColor}
+          isPaused={isPaused}
         />
       ))}
     </div>

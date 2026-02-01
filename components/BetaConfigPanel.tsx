@@ -235,6 +235,35 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
             isDarkMode={isDarkMode}
           />
 
+          {/* Bubble Controls */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-3">Bubble Animation</label>
+            <button
+              onClick={() => updateSettings({ bubblesPaused: !settings.bubblesPaused })}
+              className={`w-full px-4 py-3 rounded-2xl border flex items-center justify-center gap-3 transition-all duration-300 ${
+                settings.bubblesPaused 
+                  ? (isDarkMode ? 'bg-amber-500/20 border-amber-400 text-amber-300' : 'bg-amber-100 border-amber-600 text-amber-800')
+                  : (isDarkMode ? 'border-white/10 hover:border-white/30 text-white/70' : 'border-black/10 hover:border-black/30 text-slate-600')
+              }`}
+            >
+              {settings.bubblesPaused ? (
+                <>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                  <span className="text-xs font-bold uppercase tracking-wider">Resume Bubbles</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                  </svg>
+                  <span className="text-xs font-bold uppercase tracking-wider">Pause Bubbles</span>
+                </>
+              )}
+            </button>
+          </div>
+
           {/* Snow Settings (Dark Mode Only) */}
           {isDarkMode && (
             <div className="space-y-4">
@@ -281,6 +310,7 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
                   updateSettings({
                     bubbleColor: '#3b82f6',
                     bubbleOpacity: 100,
+                    bubblesPaused: false,
                     clockColor: '#ffffff',
                     holographicColor: '#ffffff',
                     holoOpacity: 100,

@@ -7,6 +7,7 @@ export type FontFamily = 'Inter' | 'Comic Sans MS';
 interface BetaSettings {
   bubbleColor: string;
   bubbleOpacity: number;
+  bubblesPaused: boolean;
   clockColor: string;
   holographicColor: string;
   holoOpacity: number;
@@ -30,6 +31,7 @@ interface BetaContextType {
 const defaultSettings: BetaSettings = {
   bubbleColor: '#3b82f6',
   bubbleOpacity: 100,
+  bubblesPaused: false,
   clockColor: '#ffffff',
   holographicColor: '#ffffff',
   holoOpacity: 100,
