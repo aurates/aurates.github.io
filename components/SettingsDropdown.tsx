@@ -74,7 +74,7 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
             <div className="relative">
               <button
                 onClick={() => setIsTzListOpen(!isTzListOpen)}
-                className={`w-full text-left px-4 py-3 rounded-2xl glass-liquid border flex items-center justify-between transition-all duration-300 hover:scale-[1.01] ${isDarkMode ? 'border-white/5 text-blue-300' : 'border-black/10 text-blue-900 font-black'}`}
+                className={`w-full text-left px-4 py-3 rounded-2xl border flex items-center justify-between transition-all duration-300 hover:scale-[1.01] tz-select-override ${isDarkMode ? 'border-white/10 text-blue-300' : 'border-black/10 text-blue-900 font-black'}`}
               >
                 <span className="text-sm">{selectedTzLabel}</span>
                 <svg className={`w-4 h-4 transition-transform duration-300 ${isTzListOpen ? 'rotate-180' : ''} fill-current`} viewBox="0 0 20 20">
@@ -162,20 +162,20 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
         }
 
         /* Specific override for the internal list - Much more solid to prevent text bleeding */
-        .tz-list-override {
-          background: rgba(248, 250, 252, 0.96) !important;
-          backdrop-filter: blur(40px) saturate(200%) !important;
-          -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-          border: 1px solid rgba(0, 0, 0, 0.08) !important;
-          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15) !important;
+        .tz-select-override, .tz-list-override {
+          background: rgba(255, 255, 255, 0.99) !important;
+          backdrop-filter: blur(120px) saturate(200%) !important;
+          -webkit-backdrop-filter: blur(120px) saturate(200%) !important;
+          border: 1px solid rgba(0, 0, 0, 0.1) !important;
+          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1) !important;
         }
 
-        .dark .tz-list-override {
-          background: rgba(15, 23, 42, 0.98) !important;
-          backdrop-filter: blur(50px) saturate(220%) !important;
-          -webkit-backdrop-filter: blur(50px) saturate(220%) !important;
+        .dark .tz-select-override, .dark .tz-list-override {
+          background: rgba(15, 23, 42, 0.99) !important;
+          backdrop-filter: blur(160px) saturate(220%) !important;
+          -webkit-backdrop-filter: blur(160px) saturate(220%) !important;
           border: 1px solid rgba(255, 255, 255, 0.1) !important;
-          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5) !important;
+          box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4) !important;
         }
 
         .no-scrollbar::-webkit-scrollbar {
