@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { useBeta } from '../context/BetaContext';
 import { Sparkles, X } from 'lucide-react';
 
@@ -8,36 +8,51 @@ interface BetaConfigPanelProps {
   toggleSnow?: () => void;
 }
 
-// HSL to Hex conversion
-const hslToHex = (h: number, s: number, l: number) => {
-  l /= 100;
-  const a = s * Math.min(l, 1 - l) / 100;
+// HSV to Hex conversion
+const hsvToHex = (h: number, s: number, v: number, a: number = 1) => {
+  s /= 100;
+  v /= 100;
   const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color).toString(16).padStart(2, '0');
+    const k = (n + h / 60) % 6;
+    return v - v * s * Math.max(0, Math.min(k, 4 - k, 1));
   };
-  return `#${f(0)}${f(8)}${f(4)}`;
+  const r = Math.round(f(5) * 255);
+  const g = Math.round(f(3) * 255);
+  const b = Math.round(f(1) * 255);
+  const aa = Math.round(a * 255);
+  
+  const toHex = (c: number) => c.toString(16).padStart(2, '0');
+  let hex = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  if (a < 1) hex += toHex(aa);
+  return hex;
 };
 
-// Hex to Hue conversion for initializing slider
-const hexToHue = (hex: string): number => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return 0;
-  const r = parseInt(result[1], 16) / 255;
-  const g = parseInt(result[2], 16) / 255;
-  const b = parseInt(result[3], 16) / 255;
+// Hex to HSV conversion
+const hexToHsv = (hex: string) => {
+  let hexVal = hex.replace('#', '');
+  if (hexVal.length === 3) hexVal = hexVal.split('').map(c => c + c).join('');
+  if (hexVal.length < 6) return { h: 0, s: 0, v: 100, a: 1 };
+  
+  const r = parseInt(hexVal.substring(0, 2), 16) / 255;
+  const g = parseInt(hexVal.substring(2, 4), 16) / 255;
+  const b = parseInt(hexVal.substring(4, 6), 16) / 255;
+  const a = hexVal.length === 8 ? parseInt(hexVal.substring(6, 8), 16) / 255 : 1;
+
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const d = max - min;
   let h = 0;
+  const s = max === 0 ? 0 : d / max;
+  const v = max;
+
   if (max !== min) {
-    const d = max - min;
     switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: h = ((b - r) / d + 2) / 6; break;
-      case b: h = ((r - g) / d + 4) / 6; break;
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
     }
+    h /= 6;
   }
-  return Math.round(h * 360);
+  return { h: h * 360, s: s * 100, v: v * 100, a };
 };
 
 // Color Slider Component with real-time preview
@@ -48,13 +63,72 @@ const ColorSlider: React.FC<{
   isDarkMode: boolean;
 }> = memo(({ label, color, onColorChange, isDarkMode }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [hue, setHue] = useState(() => hexToHue(color));
+  const [hsv, setHsv] = useState(() => hexToHsv(color));
+  const [inputValue, setInputValue] = useState(color);
   const pickerRef = useRef<HTMLDivElement>(null);
+  const svRef = useRef<HTMLDivElement>(null);
+  const [isDraggingSV, setIsDraggingSV] = useState(false);
+  const [isDraggingHue, setIsDraggingHue] = useState(false);
+  const [isDraggingAlpha, setIsDraggingAlpha] = useState(false);
 
-  // Update hue when external color changes
+  // Update HSV and input when external color changes
   useEffect(() => {
-    setHue(hexToHue(color));
+    setHsv(hexToHsv(color));
+    setInputValue(color);
   }, [color]);
+
+  // Handle global mouse events for dragging
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingSV && svRef.current) {
+        const rect = svRef.current.getBoundingClientRect();
+        const s = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
+        const v = Math.min(100, Math.max(0, (1 - (e.clientY - rect.top) / rect.height) * 100));
+        const newHsv = { ...hsv, s, v };
+        setHsv(newHsv);
+        updateColor(newHsv);
+      } else if (isDraggingHue && pickerRef.current) {
+        const hueBar = pickerRef.current.querySelector('.hue-bar');
+        if (hueBar) {
+          const rect = hueBar.getBoundingClientRect();
+          const h = Math.min(360, Math.max(0, ((e.clientY - rect.top) / rect.height) * 360));
+          const newHsv = { ...hsv, h };
+          setHsv(newHsv);
+          updateColor(newHsv);
+        }
+      } else if (isDraggingAlpha && pickerRef.current) {
+        const alphaBar = pickerRef.current.querySelector('.alpha-bar');
+        if (alphaBar) {
+          const rect = alphaBar.getBoundingClientRect();
+          const a = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+          const newHsv = { ...hsv, a };
+          setHsv(newHsv);
+          updateColor(newHsv);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingSV(false);
+      setIsDraggingHue(false);
+      setIsDraggingAlpha(false);
+    };
+
+    if (isDraggingSV || isDraggingHue || isDraggingAlpha) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingSV, isDraggingHue, isDraggingAlpha, hsv]);
+
+  const updateColor = useCallback((newHsv: { h: number; s: number; v: number; a: number }) => {
+    const newHex = hsvToHex(newHsv.h, newHsv.s, newHsv.v, newHsv.a);
+    setInputValue(newHex);
+    onColorChange(newHex);
+  }, [onColorChange]);
 
   // Close on outside click
   useEffect(() => {
@@ -67,52 +141,115 @@ const ColorSlider: React.FC<{
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleHueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const h = Number(e.target.value);
-    setHue(h);
-    onColorChange(hslToHex(h, 100, 50));
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = e.target.value;
+    // Auto-add # if missing and it looks like a hex code
+    if (val && !val.startsWith('#') && /^[0-9A-Fa-f]/.test(val)) {
+      val = '#' + val;
+    }
+    setInputValue(val);
+    if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(val)) {
+      onColorChange(val);
+      setHsv(hexToHsv(val));
+    }
   };
 
   return (
     <div className="relative" ref={pickerRef}>
       <label className="block text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-3">{label}</label>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full text-left px-4 py-3 rounded-2xl border flex items-center gap-3 transition-all duration-300 hover:scale-[1.01] beta-select-override ${isDarkMode ? 'border-white/10' : 'border-black/10'}`}
-      >
-        <div 
-          className="w-6 h-6 rounded-full border-2 border-white/30 shadow-lg"
-          style={{ backgroundColor: color }} 
+      
+      <div className={`flex items-center px-4 py-3 rounded-2xl border transition-all duration-300 focus-within:ring-2 focus-within:ring-purple-500/30 ${
+        isDarkMode ? 'bg-white/5 border-white/10' : 'bg-black/5 border-black/10'
+      }`}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-6 h-6 rounded-full border-2 border-white/30 shadow-lg shrink-0 transition-transform active:scale-95"
+          style={{ backgroundColor: color }}
+          title="Toggle color picker"
         />
-        <span className={`text-sm font-mono ${isDarkMode ? 'text-purple-300' : 'text-purple-900 font-black'}`}>
-          {color}
-        </span>
-      </button>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          className={`flex-1 min-w-0 bg-transparent border-none focus:outline-none ml-4 text-sm font-mono ${
+            isDarkMode ? 'text-purple-300 placeholder-white/20' : 'text-purple-900 font-black placeholder-black/20'
+          }`}
+          placeholder="#000000"
+        />
+      </div>
 
       {/* Color Picker Dropdown */}
-      <div className={`absolute left-0 right-0 mt-2 p-4 rounded-3xl z-[120] transition-all duration-300 beta-picker-override ${
+      <div className={`absolute left-0 right-0 mt-2 p-4 rounded-3xl z-[120] transition-all duration-300 beta-picker-override overflow-hidden ${
         isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 pointer-events-none -translate-y-2 scale-95'
       } ${isDarkMode ? 'shadow-2xl' : 'shadow-xl'}`}>
-        {/* Hue Slider */}
-        <div>
-          <div className="relative h-6">
+        
+        <div className="flex gap-4 h-44 mb-4">
+          {/* SV Square */}
+          <div 
+            ref={svRef}
+            className="flex-1 relative rounded-xl overflow-hidden cursor-crosshair touch-none"
+            style={{ backgroundColor: `hsl(${hsv.h}, 100%, 50%)` }}
+            onMouseDown={(e) => {
+              setIsDraggingSV(true);
+              const rect = svRef.current!.getBoundingClientRect();
+              const s = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
+              const v = Math.min(100, Math.max(0, (1 - (e.clientY - rect.top) / rect.height) * 100));
+              const newHsv = { ...hsv, s, v };
+              setHsv(newHsv);
+              updateColor(newHsv);
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
             <div 
-              className="absolute inset-0 rounded-full" 
-              style={{ background: 'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }} 
-            />
-            <input 
-              type="range" 
-              min="0" 
-              max="360" 
-              value={hue}
-              onChange={handleHueChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-            <div 
-              className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-2 border-black/20 shadow-lg pointer-events-none"
-              style={{ left: `calc(${(hue / 360) * 100}% - 10px)` }}
+              className="absolute w-4 h-4 border-2 border-white rounded-full shadow-[0_0_0_1.5px_rgba(0,0,0,0.5)] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ left: `${hsv.s}%`, top: `${100 - hsv.v}%` }}
             />
           </div>
+
+          {/* Hue Vertical Bar */}
+          <div 
+            className="hue-bar w-5 h-full relative rounded-full cursor-pointer touch-none"
+            style={{ background: 'linear-gradient(to bottom, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }}
+            onMouseDown={(e) => {
+              setIsDraggingHue(true);
+              const rect = e.currentTarget.getBoundingClientRect();
+              const h = Math.min(360, Math.max(0, ((e.clientY - rect.top) / rect.height) * 360));
+              const newHsv = { ...hsv, h };
+              setHsv(newHsv);
+              updateColor(newHsv);
+            }}
+          >
+            <div 
+              className="absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-white border-2 border-black/20 rounded-full shadow-lg pointer-events-none"
+              style={{ top: `calc(${(hsv.h / 360) * 100}% - 12px)` }}
+            />
+          </div>
+        </div>
+
+        {/* Alpha Bar */}
+        <div 
+          className="alpha-bar h-4 w-full relative rounded-full cursor-pointer touch-none mb-2"
+          style={{ 
+            background: `
+              linear-gradient(to right, transparent, ${hsvToHex(hsv.h, hsv.s, hsv.v, 1)}),
+              conic-gradient(#ccc 0.25turn, #fff 0.25turn 0.5turn, #ccc 0.5turn 0.75turn, #fff 0.75turn) 
+              0 0 / 8px 8px
+            ` 
+          }}
+          onMouseDown={(e) => {
+            setIsDraggingAlpha(true);
+            const rect = e.currentTarget.getBoundingClientRect();
+            const a = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+            const newHsv = { ...hsv, a };
+            setHsv(newHsv);
+            updateColor(newHsv);
+          }}
+        >
+          <div 
+            className="absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white border-2 border-black/10 rounded-full shadow-lg pointer-events-none"
+            style={{ left: `calc(${hsv.a * 100}% - 10px)` }}
+          />
         </div>
       </div>
     </div>
@@ -221,17 +358,17 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
 
           {/* Holo Color */}
           <ColorSlider
-            label="Holo Color"
-            color={settings.holographicColor}
-            onColorChange={(color) => updateSettings({ holographicColor: color })}
+            label={`Holo Color (${isDarkMode ? 'Dark' : 'Light'} Mode)`}
+            color={isDarkMode ? settings.holographicColorDark : settings.holographicColorLight}
+            onColorChange={(color) => updateSettings(isDarkMode ? { holographicColorDark: color } : { holographicColorLight: color })}
             isDarkMode={isDarkMode}
           />
 
           {/* Bubble Tint */}
           <ColorSlider
-            label="Bubble Tint"
-            color={settings.bubbleColor}
-            onColorChange={(color) => updateSettings({ bubbleColor: color })}
+            label={`Bubble Tint (${isDarkMode ? 'Dark' : 'Light'} Mode)`}
+            color={isDarkMode ? settings.bubbleColorDark : settings.bubbleColorLight}
+            onColorChange={(color) => updateSettings(isDarkMode ? { bubbleColorDark: color } : { bubbleColorLight: color })}
             isDarkMode={isDarkMode}
           />
 
@@ -308,11 +445,13 @@ const BetaConfigPanel: React.FC<BetaConfigPanelProps> = memo(({ isDarkMode, isSn
               onClick={() => {
                 if(window.confirm("Reset all designer settings?")) {
                   updateSettings({
-                    bubbleColor: '#3b82f6',
+                    bubbleColorDark: '#3b82f6',
+                    bubbleColorLight: '#3b82f6',
+                    holographicColorDark: '#ffffff',
+                    holographicColorLight: '#6b21a8',
                     bubbleOpacity: 100,
                     bubblesPaused: false,
                     clockColor: '#ffffff',
-                    holographicColor: '#ffffff',
                     holoOpacity: 100,
                     backgroundColor: '#020617',
                     bgOpacity: 100,

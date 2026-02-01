@@ -1,0 +1,16 @@
+# Liquid Glass Theme Configuration
+menu:
+  Home: /
+  Archives: /archives
+  Categories: /categories
+  Tags: /tags
+  About: /about
+
+# Social Links
+social:
+  github: https://github.com/aurates
+  discord: "#"
+
+# Site info
+author: Dylan
+description: Thoughts & Projects

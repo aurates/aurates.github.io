@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= page.title ? page.title + ' | ' : '' %><%= config.title %></title>
+  <meta name="description" content="<%= config.description %>">
+  <%- css('css/style') %>
+</head>
+<body class="bg-slate-950 min-h-screen text-white overflow-x-hidden antialiased">
+  
+  <!-- Animated Bubble Background -->
+  <div class="bubble-container">
+    <div class="bubble bubble-1"></div>
+    <div class="bubble bubble-2"></div>
+    <div class="bubble bubble-3"></div>
+    <div class="bubble bubble-4"></div>
+    <div class="bubble bubble-5"></div>
+  </div>
+
+  <!-- Navigation (Mobile only) -->
+  <%- partial('partial/header') %>
+
+  <!-- Page Wrapper -->
+  <div class="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 pt-24 lg:pt-12 pb-20">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- Sidebar -->
+      <aside class="w-full lg:w-80 flex-shrink-0 animate-slide-right">
+        <%- partial('partial/sidebar') %>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 min-w-0 animate-fade-in">
+        <%- body %>
+        <!-- Footer -->
+        <%- partial('partial/footer') %>
+      </main>
+    </div>
+  </div>
+
+  <%- js('js/main') %>
+</body>
+</html>

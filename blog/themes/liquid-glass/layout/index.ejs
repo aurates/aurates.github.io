@@ -1,0 +1,28 @@
+<!-- Blog Home / Index Page -->
+<div class="space-y-8">
+  <!-- Posts Grid -->
+  <div class="space-y-6">
+    <% page.posts.each(function(post, index) { %>
+      <%- partial('partial/article', {post: post, index: index}) %>
+    <% }); %>
+  </div>
+
+  <!-- Pagination -->
+  <% if (page.total > 1) { %>
+    <nav class="flex justify-center items-center gap-4 mt-12 animate-fade-in">
+      <% if (page.prev) { %>
+        <a href="<%- url_for(page.prev_link) %>" class="glass-button px-6 py-3 rounded-2xl font-medium hover:scale-105 transition-transform">
+          ← Newer
+        </a>
+      <% } %>
+      <span class="text-slate-500">
+        Page <%= page.current %> of <%= page.total %>
+      </span>
+      <% if (page.next) { %>
+        <a href="<%- url_for(page.next_link) %>" class="glass-button px-6 py-3 rounded-2xl font-medium hover:scale-105 transition-transform">
+          Older →
+        </a>
+      <% } %>
+    </nav>
+  <% } %>
+</div>

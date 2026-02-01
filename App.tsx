@@ -155,7 +155,7 @@ const App: React.FC = () => {
       
       <BubbleBackground 
         isDarkMode={isDarkMode} 
-        customBubbleColor={isBeta ? settings.bubbleColor : undefined}
+        customBubbleColor={isBeta ? (isDarkMode ? settings.bubbleColorDark : settings.bubbleColorLight) : undefined}
         isPaused={isBeta ? settings.bubblesPaused : undefined}
       />
       
@@ -206,9 +206,9 @@ const App: React.FC = () => {
               {/* Using leading-none and flex layout to ensure perfect 1:1 vertical spacing between elements */}
               <div className="entrance-anim flex flex-col items-center leading-none">
                 <h1 
-                  className={`text-7xl md:text-9xl font-bold tracking-tighter select-none transition-colors duration-500 ${isDarkMode ? 'text-white' : 'text-black'}`}
+                  className={`text-7xl md:text-9xl font-bold tracking-tighter select-none ${isBeta ? '' : (isDarkMode ? 'text-white' : 'text-black')}`}
                   style={{ 
-                    color: isBeta && settings.holographicColor !== '#ffffff' ? settings.holographicColor : undefined,
+                    color: isBeta ? (isDarkMode ? settings.holographicColorDark : settings.holographicColorLight) : undefined,
                     fontFamily: isBeta ? settings.fontFamily : 'inherit'
                   }}
                 >
@@ -235,6 +235,12 @@ const App: React.FC = () => {
                   label="Discord" 
                   bgColor="bg-[#5865F2]" 
                   onClick={handleDiscordClick}
+                />
+                <SocialLink 
+                  href="/blog" 
+                  icon={ICONS.BLOG} 
+                  label="Blog" 
+                  bgColor={isDarkMode ? 'bg-purple-600' : 'bg-purple-700'} 
                 />
               </div>
             </div>

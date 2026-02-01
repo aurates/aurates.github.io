@@ -1,0 +1,68 @@
+<!-- Tag Page -->
+<div class="animate-fade-in">
+  <!-- Page Header -->
+  <header class="glass-card rounded-3xl p-8 md:p-12 mb-12 text-center">
+    <h1 class="text-4xl md:text-5xl font-bold mb-4">Tags</h1>
+    <p class="text-slate-400 text-lg">Browse posts by tag</p>
+  </header>
+
+  <% if (site.tags.length) { %>
+    <!-- Tags Cloud -->
+    <div class="glass-card rounded-3xl p-8 mb-12">
+      <div class="flex flex-wrap gap-3 justify-center">
+        <% site.tags.each(function(tag, index) { 
+          var size = Math.min(Math.max(tag.posts.length * 0.3 + 0.8, 0.8), 1.5);
+        %>
+          <a href="<%- url_for(tag.path) %>" 
+             class="tag-cloud-item animate-float" 
+             style="font-size: <%= size %>rem; animation-delay: <%= index * 0.1 %>s;">
+            #<%= tag.name %>
+            <span class="tag-count"><%= tag.posts.length %></span>
+          </a>
+        <% }); %>
+      </div>
+    </div>
+
+    <!-- If viewing a specific tag, show posts -->
+    <% if (page.tag) { %>
+      <section class="mt-12">
+        <h2 class="text-2xl font-bold mb-6 glass-card inline-block px-6 py-2 rounded-full">
+          Posts tagged "<%= page.tag %>"
+        </h2>
+        <div class="space-y-4">
+          <% page.posts.each(function(post, index) { %>
+            <article class="glass-card rounded-2xl p-6 hover:scale-[1.01] transition-all group animate-slide-up" style="animation-delay: <%= index * 0.05 %>s;">
+              <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <time datetime="<%= date_xml(post.date) %>" class="text-slate-500 font-mono text-sm md:w-28 flex-shrink-0">
+                  <%= date(post.date, 'YYYY-MM-DD') %>
+                </time>
+                <div class="flex-1">
+                  <a href="<%- url_for(post.path) %>" class="block">
+                    <h3 class="text-xl font-semibold group-hover:text-purple-400 transition-colors">
+                      <%= post.title || '(Untitled)' %>
+                    </h3>
+                  </a>
+                  <% if (post.categories && post.categories.length) { %>
+                    <div class="flex flex-wrap gap-2 mt-2">
+                      <% post.categories.each(function(cat) { %>
+                        <span class="text-sm text-slate-500">📁 <%= cat.name %></span>
+                      <% }); %>
+                    </div>
+                  <% } %>
+                </div>
+                <svg class="w-5 h-5 text-slate-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all flex-shrink-0 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </div>
+            </article>
+          <% }); %>
+        </div>
+      </section>
+    <% } %>
+  <% } else { %>
+    <!-- Empty State -->
+    <div class="glass-card rounded-3xl p-12 text-center">
+      <p class="text-slate-400 text-lg">No tags found.</p>
+    </div>
+  <% } %>
+</div>

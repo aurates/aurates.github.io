@@ -60,12 +60,9 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
   const getTextStyle = () => {
     if (!isBeta) return {};
     
-    // Use holographicColor for clock text when in beta
-    if (settings.holographicColor && settings.holographicColor !== '#ffffff') {
-      return { color: settings.holographicColor };
-    }
-    
-    return {};
+    // Use mode-specific holographicColor for clock text when in beta
+    const holoColor = isDarkMode ? settings.holographicColorDark : settings.holographicColorLight;
+    return { color: holoColor };
   };
 
   const customStyle = getTextStyle();
@@ -73,8 +70,8 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
   return (
     <div className="flex flex-col items-center justify-center select-none w-full max-w-full overflow-hidden px-4 md:px-10">
       <div 
-        className={`font-black tracking-tight flex items-center justify-center py-4 transition-colors duration-700 ${
-          isDarkMode ? 'text-white' : 'text-slate-900'
+        className={`font-black tracking-tight flex items-center justify-center py-4 ${
+          isBeta ? '' : (isDarkMode ? 'text-white' : 'text-slate-900')
         }`}
         style={{
           fontSize: 'clamp(3rem, 18vw, 15vw)',
@@ -91,8 +88,8 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
       </div>
       
       <div className={`overflow-hidden transition-all duration-500 ease-in-out ${showDate ? 'max-h-40 opacity-100 mt-2 md:mt-4' : 'max-h-0 opacity-0 mt-0'}`}>
-        <p className={`text-lg md:text-3xl font-bold tracking-wide px-8 py-2 md:py-3 transition-colors duration-700 ${
-          isDarkMode ? 'text-white' : 'text-slate-900'
+        <p className={`text-lg md:text-3xl font-bold tracking-wide px-8 py-2 md:py-3 ${
+          isBeta ? '' : (isDarkMode ? 'text-white' : 'text-slate-900')
         }`}
         style={customStyle}
         >

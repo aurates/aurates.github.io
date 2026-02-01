@@ -5,11 +5,16 @@ export type FallingTextStyle = 'default' | 'matrix' | 'cyber' | 'outrun';
 export type FontFamily = 'Inter' | 'Comic Sans MS';
 
 interface BetaSettings {
-  bubbleColor: string;
+  // Dark mode colors
+  bubbleColorDark: string;
+  holographicColorDark: string;
+  // Light mode colors
+  bubbleColorLight: string;
+  holographicColorLight: string;
+  // Shared settings
   bubbleOpacity: number;
   bubblesPaused: boolean;
   clockColor: string;
-  holographicColor: string;
   holoOpacity: number;
   backgroundColor: string;
   bgOpacity: number;
@@ -29,11 +34,16 @@ interface BetaContextType {
 }
 
 const defaultSettings: BetaSettings = {
-  bubbleColor: '#3b82f6',
+  // Dark mode colors
+  bubbleColorDark: '#3b82f6',
+  holographicColorDark: '#ffffff',
+  // Light mode colors
+  bubbleColorLight: '#3b82f6',
+  holographicColorLight: '#6b21a8',
+  // Shared settings
   bubbleOpacity: 100,
   bubblesPaused: false,
   clockColor: '#ffffff',
-  holographicColor: '#ffffff',
   holoOpacity: 100,
   backgroundColor: '#020617', // slate-950 default
   bgOpacity: 100,

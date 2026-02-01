@@ -1,0 +1,68 @@
+# NexT Theme Configuration
+# https://github.com/next-theme/hexo-theme-next
+
+# ---------------------------------------------------------------
+# Scheme Settings
+# ---------------------------------------------------------------
+# Schemes: Muse | Mist | Pisces | Gemini
+scheme: Gemini
+
+# ---------------------------------------------------------------
+# Sidebar Settings
+# ---------------------------------------------------------------
+sidebar:
+  position: left
+  display: post
+  padding: 18
+  offset: 12
+
+# Social Links
+# Remove the social section
+social: {}
+social_icons:
+  enable: false
+  icons_only: false
+  transition: false
+
+# ---------------------------------------------------------------
+# Blogroll Settings
+# ---------------------------------------------------------------
+# Links (Blogroll)
+# Remove the links section as requested
+links_settings:
+  enable: false
+  icon: fa fa-link
+  title: Links
+links: {}
+
+# ---------------------------------------------------------------
+# Footer Settings
+# ---------------------------------------------------------------
+footer:
+  since: 2026
+  icon:
+    name: fa fa-heart
+    animated: true
+    color: "#ff0000"
+  copyright: Dylan
+  powered: false
+  theme:
+    enable: false
+    version: false
+
+# ---------------------------------------------------------------
+# Menu Settings
+# ---------------------------------------------------------------
+menu:
+  home: /blog/ || fa fa-home
+  about: /blog/about/ || fa fa-user
+  tags: /blog/tags/ || fa fa-tags
+  categories: /blog/categories/ || fa fa-th
+  archives: /blog/archives/ || fa fa-archive
+  #schedule: /schedule/ || fa fa-calendar
+  #sitemap: /sitemap.xml || fa fa-sitemap
+  #commonweal: /404/ || fa fa-heartbeat
+
+menu_settings:
+  icons: true
+  badges: true
