@@ -51,5 +51,3 @@ A minimalist personal landing page featuring a "Liquid Glass" aesthetic with ani
 - 📱 Fully responsive design
 
 ---
-
-*Built with passion and AI.*
