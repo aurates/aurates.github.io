@@ -1,3 +1,5 @@
+# This README.md is very fucking cringe, I StrongLY recommend that you don't read it...
+
 # AI Generated Personal Landing Page Demo </3
 
 This project is fully powered by **Gemini 3 Flash**, an advanced AI model that conceptualized, designed, and implemented every aspect of this digital home.
