@@ -7,6 +7,7 @@ import FallingText from './components/FallingText';
 import SnowEffect from './components/SnowEffect';
 import SnowToggle from './components/SnowToggle';
 import DiscordModal from './components/DiscordModal';
+import DonateModal from './components/DonateModal';
 import ClockPanel from './components/ClockPanel';
 import SettingsDropdown from './components/SettingsDropdown';
 import { ICONS } from './constants';
@@ -49,6 +50,7 @@ const App: React.FC = () => {
   const [isSnowing, setIsSnowing] = useState(false);
   const [showFallingText, setShowFallingText] = useState(false);
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false);
+  const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const tapCount = useRef(0);
@@ -141,6 +143,10 @@ const App: React.FC = () => {
     setIsDiscordModalOpen(true);
   };
 
+  const handleDonateClick = () => {
+    setIsDonateModalOpen(true);
+  };
+
   return (
     <div className={`relative h-[100dvh] w-full transition-colors duration-500 overflow-hidden flex flex-col items-center justify-center ${isDarkMode ? 'bg-slate-950' : 'bg-white'}`}>
       
@@ -178,6 +184,12 @@ const App: React.FC = () => {
       <DiscordModal 
         isOpen={isDiscordModalOpen} 
         onClose={() => setIsDiscordModalOpen(false)} 
+        isDarkMode={isDarkMode}
+      />
+
+      <DonateModal
+        isOpen={isDonateModalOpen}
+        onClose={() => setIsDonateModalOpen(false)}
         isDarkMode={isDarkMode}
       />
 
@@ -230,7 +242,10 @@ const App: React.FC = () => {
       </main>
 
       <footer className="absolute bottom-8 w-full text-center z-10">
-        <p className={`text-lg font-medium tracking-tight flex items-center justify-center gap-2 transition-colors duration-500 ${isDarkMode ? 'text-slate-500/80' : 'text-slate-400'}`}>
+        <p
+          className={`text-lg font-medium tracking-tight flex items-center justify-center gap-2 transition-colors duration-500 ${isDarkMode ? 'text-slate-500/80' : 'text-slate-400'} cursor-pointer select-none hover:opacity-80`}
+          onClick={handleDonateClick}
+        >
           2026 
           <span className="text-red-500 text-2xl drop-shadow-sm">❤</span> 
           Dylan
