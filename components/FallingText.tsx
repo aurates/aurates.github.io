@@ -6,26 +6,27 @@ interface FallingTextProps {
   onComplete: () => void;
 }
 
+const detectMobileOrTablet = () => {
+  // 1. Check for Touch Support (Most reliable for "Quickly touch the screen")
+  const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+  // 2. Check User Agent for common mobile/tablet strings
+  const ua = navigator.userAgent;
+  const isMobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+
+  // 3. Screen width check (Common tablets/phones are < 1024px)
+  const isSmallScreen = window.innerWidth <= 1024;
+
+  // We assume mobile/tablet if it has touch AND is either a mobile UA or a small screen
+  return hasTouch && (isMobileRegex || isSmallScreen);
+};
+
 const FallingText: React.FC<FallingTextProps> = ({ isDarkMode, onComplete }) => {
-  // Default to PC message as a safe fallback for initial render
-  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
-  const [isHolographic] = useState(true);
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(() => detectMobileOrTablet());
+  const isHolographic = true;
 
   useEffect(() => {
-    const checkDevice = () => {
-      // 1. Check for Touch Support (Most reliable for "Quickly touch the screen")
-      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      
-      // 2. Check User Agent for common mobile/tablet strings
-      const ua = navigator.userAgent;
-      const isMobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
-      
-      // 3. Screen width check (Common tablets/phones are < 1024px)
-      const isSmallScreen = window.innerWidth <= 1024;
-      
-      // We assume mobile/tablet if it has touch AND is either a mobile UA or a small screen
-      setIsMobileOrTablet(hasTouch && (isMobileRegex || isSmallScreen));
-    };
+    const checkDevice = () => setIsMobileOrTablet(detectMobileOrTablet());
 
     checkDevice();
     window.addEventListener('resize', checkDevice);

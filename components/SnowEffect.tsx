@@ -8,10 +8,14 @@ const SnowEffect: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (prefersReducedMotion.matches) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
+    let animationFrameId = 0;
+    let isAnimating = true;
     let width = window.innerWidth;
     let height = window.innerHeight;
 
@@ -69,6 +73,7 @@ const SnowEffect: React.FC = () => {
     };
 
     const animate = () => {
+      if (!isAnimating) return;
       ctx.clearRect(0, 0, width, height);
       snowflakes.forEach((snowflake) => {
         snowflake.update();
@@ -77,13 +82,29 @@ const SnowEffect: React.FC = () => {
       animationFrameId = requestAnimationFrame(animate);
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isAnimating = false;
+        cancelAnimationFrame(animationFrameId);
+        return;
+      }
+
+      if (!isAnimating) {
+        isAnimating = true;
+        animate();
+      }
+    };
+
     window.addEventListener('resize', init);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     init();
     animate();
 
     return () => {
+      isAnimating = false;
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', init);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 

@@ -33,16 +33,16 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
   const [isTzListOpen, setIsTzListOpen] = useState(false);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: Event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setIsTzListOpen(false);
       }
     };
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('pointerdown', handleClickOutside);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, [isOpen, setIsOpen]);
 
   const selectedTzLabel = utcTimezones.find(t => t.value === timezone)?.label || 'Local Time';

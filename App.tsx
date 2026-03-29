@@ -16,12 +16,23 @@ import { ICONS } from './constants';
 const getCookie = (name: string) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift();
+  if (parts.length === 2) {
+    const segment = parts.pop();
+    return segment ? segment.split(';').shift() ?? null : null;
+  }
   return null;
 };
 
 const setCookie = (name: string, value: string) => {
   document.cookie = `${name}=${value};path=/;max-age=31536000;SameSite=Lax`;
+};
+
+const parseView = (value: string | null): 'home' | 'clock' => {
+  return value === 'clock' ? 'clock' : 'home';
+};
+
+const parseClockFormat = (value: string | null): 'HH:mm' | 'HH:mm:ss' => {
+  return value === 'HH:mm:ss' ? 'HH:mm:ss' : 'HH:mm';
 };
 
 const App: React.FC = () => {
@@ -33,12 +44,12 @@ const App: React.FC = () => {
   
   // View State (home | clock)
   const [view, setView] = useState<'home' | 'clock'>(() => {
-    return (getCookie('app_view') as 'home' | 'clock') || 'home';
+    return parseView(getCookie('app_view'));
   });
 
   // Clock Preferences
   const [clockFormat, setClockFormat] = useState<'HH:mm' | 'HH:mm:ss'>(() => {
-    return (getCookie('clock_format') as any) || 'HH:mm';
+    return parseClockFormat(getCookie('clock_format'));
   });
   const [showDate, setShowDate] = useState(() => {
     return getCookie('clock_show_date') === 'true';
@@ -89,32 +100,55 @@ const App: React.FC = () => {
   // Escape key to return home
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && view === 'clock') {
+      if (e.key !== 'Escape') return;
+
+      if (isDiscordModalOpen) {
+        setIsDiscordModalOpen(false);
+        return;
+      }
+
+      if (isDonateModalOpen) {
+        setIsDonateModalOpen(false);
+        return;
+      }
+
+      if (view === 'clock') {
         setView('home');
         setIsSettingsOpen(false);
       }
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [view]);
+  }, [view, isDiscordModalOpen, isDonateModalOpen]);
 
   // Periodic Falling Text
   useEffect(() => {
-    let timeoutId: any;
+    let timeoutId: ReturnType<typeof window.setTimeout> | null = null;
     const spawnText = () => {
       setShowFallingText(true);
-      timeoutId = setTimeout(spawnText, 30000);
+      timeoutId = window.setTimeout(spawnText, 30000);
     };
-    const firstTimeout = setTimeout(spawnText, 800);
+    const firstTimeout = window.setTimeout(spawnText, 800);
     return () => {
-      clearTimeout(firstTimeout);
-      clearTimeout(timeoutId);
+      window.clearTimeout(firstTimeout);
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
     };
   }, []);
 
   // 3x Trigger Logic (Space or Touch)
   const handleInteraction = useCallback((event?: KeyboardEvent) => {
-    if (event && event.code !== 'Space') return;
+    if (isDiscordModalOpen || isDonateModalOpen) return;
+
+    if (event) {
+      if (event.code !== 'Space' || event.repeat) return;
+      const target = event.target as HTMLElement | null;
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName)) {
+        return;
+      }
+    }
+
     const now = Date.now();
     if (now - lastTapTime.current < 450) {
       tapCount.current += 1;
@@ -127,23 +161,26 @@ const App: React.FC = () => {
       setIsSettingsOpen(false);
       tapCount.current = 0;
     }
-  }, []);
+  }, [isDiscordModalOpen, isDonateModalOpen]);
 
   useEffect(() => {
+    const handleTouchStart = () => handleInteraction();
     window.addEventListener('keydown', handleInteraction);
-    window.addEventListener('touchstart', () => handleInteraction());
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
     return () => {
       window.removeEventListener('keydown', handleInteraction);
-      window.removeEventListener('touchstart', () => handleInteraction());
+      window.removeEventListener('touchstart', handleTouchStart);
     };
   }, [handleInteraction]);
 
   const handleDiscordClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    setIsDonateModalOpen(false);
     setIsDiscordModalOpen(true);
   };
 
   const handleDonateClick = () => {
+    setIsDiscordModalOpen(false);
     setIsDonateModalOpen(true);
   };
 
@@ -242,14 +279,15 @@ const App: React.FC = () => {
       </main>
 
       <footer className="absolute bottom-8 w-full text-center z-10">
-        <p
-          className={`text-lg font-medium tracking-tight flex items-center justify-center gap-2 transition-colors duration-500 ${isDarkMode ? 'text-slate-500/80' : 'text-slate-400'} cursor-pointer select-none hover:opacity-80`}
+        <button
+          type="button"
+          className={`text-lg font-medium tracking-tight inline-flex items-center justify-center gap-2 transition-colors duration-500 ${isDarkMode ? 'text-slate-500/80' : 'text-slate-400'} cursor-pointer select-none hover:opacity-80`}
           onClick={handleDonateClick}
         >
           2026 
           <span className="text-red-500 text-2xl drop-shadow-sm">❤</span> 
           Dylan
-        </p>
+        </button>
       </footer>
     </div>
   );

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 interface ClockPanelProps {
   isDarkMode: boolean;
@@ -16,44 +16,66 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
     return () => clearInterval(timer);
   }, []);
 
-  const getTimeParts = () => {
+  const mainFormatter = useMemo(() => {
     try {
-      const baseOptions: Intl.DateTimeFormatOptions = {
+      return new Intl.DateTimeFormat('en-GB', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
         timeZone: timezone || undefined,
-      };
-      const mainTime = new Intl.DateTimeFormat('en-GB', baseOptions).format(time);
-      
-      const secOptions: Intl.DateTimeFormatOptions = {
+      });
+    } catch {
+      return null;
+    }
+  }, [timezone]);
+
+  const secondsFormatter = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat('en-GB', {
         second: '2-digit',
         timeZone: timezone || undefined,
-      };
-      const seconds = new Intl.DateTimeFormat('en-GB', secOptions).format(time);
-      
-      return { mainTime, seconds };
-    } catch (e) {
-      const local = time.toLocaleTimeString('en-GB', { hour12: false });
-      return { mainTime: local.substring(0, 5), seconds: local.substring(6, 8) };
+      });
+    } catch {
+      return null;
     }
-  };
+  }, [timezone]);
 
-  const getDateString = () => {
+  const dateFormatter = useMemo(() => {
     try {
       return new Intl.DateTimeFormat('en-GB', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
         timeZone: timezone || undefined,
-      }).format(time);
-    } catch (e) {
-      return time.toLocaleDateString();
+      });
+    } catch {
+      return null;
     }
-  };
+  }, [timezone]);
 
-  const { mainTime, seconds } = getTimeParts();
-  const showSeconds = format.includes('ss');
+  const { mainTime, seconds } = useMemo(() => {
+    if (mainFormatter && secondsFormatter) {
+      return {
+        mainTime: mainFormatter.format(time),
+        seconds: secondsFormatter.format(time),
+      };
+    }
+
+    const pad = (value: number) => value.toString().padStart(2, '0');
+    return {
+      mainTime: `${pad(time.getHours())}:${pad(time.getMinutes())}`,
+      seconds: pad(time.getSeconds()),
+    };
+  }, [time, mainFormatter, secondsFormatter]);
+
+  const dateString = useMemo(() => {
+    if (dateFormatter) {
+      return dateFormatter.format(time);
+    }
+    return time.toLocaleDateString();
+  }, [time, dateFormatter]);
+
+  const showSeconds = format === 'HH:mm:ss';
 
   return (
     <div className="flex flex-col items-center justify-center select-none w-full max-w-full overflow-hidden px-4 md:px-10">
@@ -78,7 +100,7 @@ const ClockPanel: React.FC<ClockPanelProps> = ({ isDarkMode, format, showDate, t
         <p className={`text-lg md:text-3xl font-bold tracking-wide px-8 py-2 md:py-3 transition-colors duration-700 ${
           isDarkMode ? 'text-white' : 'text-slate-900'
         }`}>
-          {getDateString()}
+          {dateString}
         </p>
       </div>
     </div>
