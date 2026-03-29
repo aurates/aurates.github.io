@@ -37,7 +37,7 @@ const DonateModal: React.FC<DonateModalProps> = ({ isOpen, onClose, isDarkMode }
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex min-w-[280px] flex-col items-center gap-6">
-          <h2 className="text-4xl md:text-6xl font-black tracking-tight">{'Dotate </3'}</h2>
+          <h2 className="text-4xl md:text-6xl font-black tracking-tight">Donate</h2>
 
           <div className="w-full space-y-4">
             {DONATE_METHODS.map((method) => (
