@@ -63,6 +63,7 @@ const App: React.FC = () => {
   const [isDiscordModalOpen, setIsDiscordModalOpen] = useState(false);
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const isAnyModalOpen = isDiscordModalOpen || isDonateModalOpen;
   
   const tapCount = useRef(0);
   const lastTapTime = useRef(0);
@@ -88,14 +89,20 @@ const App: React.FC = () => {
     const handleShortcuts = (e: KeyboardEvent) => {
       const isS = e.key.toLowerCase() === 's';
       const isMod = e.ctrlKey || e.metaKey;
-      if (isMod && e.shiftKey && isS && view === 'clock') {
+      if (isMod && e.shiftKey && isS && view === 'clock' && !isAnyModalOpen) {
         e.preventDefault();
         setIsSettingsOpen(prev => !prev);
       }
     };
     window.addEventListener('keydown', handleShortcuts);
     return () => window.removeEventListener('keydown', handleShortcuts);
-  }, [view]);
+  }, [view, isAnyModalOpen]);
+
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      setIsSettingsOpen(false);
+    }
+  }, [isAnyModalOpen]);
 
   // Escape key to return home
   useEffect(() => {
@@ -139,7 +146,7 @@ const App: React.FC = () => {
 
   // 3x Trigger Logic (Space or Touch)
   const handleInteraction = useCallback((event?: KeyboardEvent) => {
-    if (isDiscordModalOpen || isDonateModalOpen) return;
+    if (isAnyModalOpen) return;
 
     if (event) {
       if (event.code !== 'Space' || event.repeat) return;
@@ -161,7 +168,7 @@ const App: React.FC = () => {
       setIsSettingsOpen(false);
       tapCount.current = 0;
     }
-  }, [isDiscordModalOpen, isDonateModalOpen]);
+  }, [isAnyModalOpen]);
 
   useEffect(() => {
     const handleTouchStart = () => handleInteraction();
@@ -215,6 +222,7 @@ const App: React.FC = () => {
           setShowDate={setShowDate}
           isOpen={isSettingsOpen}
           setIsOpen={setIsSettingsOpen}
+          isDisabled={isAnyModalOpen}
         />
       )}
 

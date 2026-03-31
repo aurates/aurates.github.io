@@ -11,6 +11,7 @@ interface SettingsDropdownProps {
   setShowDate: (s: boolean) => void;
   isOpen: boolean;
   setIsOpen: (o: boolean) => void;
+  isDisabled?: boolean;
 }
 
 const generateUTCList = () => {
@@ -27,10 +28,17 @@ const generateUTCList = () => {
 const utcTimezones = generateUTCList();
 
 const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
-  isDarkMode, timezone, setTimezone, format, setFormat, showDate, setShowDate, isOpen, setIsOpen
+  isDarkMode, timezone, setTimezone, format, setFormat, showDate, setShowDate, isOpen, setIsOpen, isDisabled = false
 }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isTzListOpen, setIsTzListOpen] = useState(false);
+
+  useEffect(() => {
+    if (isDisabled) {
+      setIsOpen(false);
+      setIsTzListOpen(false);
+    }
+  }, [isDisabled, setIsOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
@@ -51,10 +59,12 @@ const SettingsDropdown: React.FC<SettingsDropdownProps> = ({
     <div className="fixed top-4 left-4 md:top-8 md:left-8 z-[110]" ref={dropdownRef}>
       <button
         onClick={() => {
+          if (isDisabled) return;
           setIsOpen(!isOpen);
           setIsTzListOpen(false);
         }}
-        className={`p-3 md:p-4 rounded-3xl glass-liquid transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center group ${isOpen ? 'scale-110 shadow-lg' : ''}`}
+        disabled={isDisabled}
+        className={`p-3 md:p-4 rounded-3xl glass-liquid transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed ${isOpen ? 'scale-110 shadow-lg' : ''}`}
         aria-label="Clock settings"
       >
         <svg 

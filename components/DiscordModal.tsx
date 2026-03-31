@@ -10,7 +10,7 @@ interface DiscordModalProps {
 const DiscordModal: React.FC<DiscordModalProps> = ({ isOpen, onClose, isDarkMode }) => {
   return (
     <div 
-      className={`fixed inset-0 z-[100] flex items-center justify-center px-4 pointer-events-none`}
+      className={`fixed inset-0 z-[200] flex items-center justify-center px-4 pointer-events-none`}
     >
       {/* 
           Backdrop Logic Fixed:

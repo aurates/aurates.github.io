@@ -15,7 +15,7 @@ const DONATE_METHODS = [
 
 const DonateModal: React.FC<DonateModalProps> = ({ isOpen, onClose, isDarkMode }) => {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 pointer-events-none">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 pointer-events-none">
       <div
         className={`absolute inset-0 transition-all duration-500 ease-in-out ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0'}`}
         style={{
