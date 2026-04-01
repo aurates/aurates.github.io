@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, useState, memo } from 'react';
+import React, { useRef, useEffect, useState, memo, useMemo } from 'react';
 
 interface BubbleBackgroundProps {
   isDarkMode: boolean;
@@ -60,10 +60,11 @@ const Bubble = memo<{
   const opacity = opacityLevels[bubble.opacityLevel % 4];
   
   // Precompute equivalent variation directly in color to avoid per-frame filter compositing cost
-  const customVariation = [0.85, 1, 1.1, 1.2];
-  const rgb = useCustom ? hexToRgb(baseColor) : null;
+  const brightnessMultipliers = [0.85, 1, 1.1, 1.2];
+  const rgb = useMemo(() => (useCustom ? hexToRgb(baseColor) : null), [useCustom, baseColor]);
+  const brightnessMultiplier = brightnessMultipliers[bubble.opacityLevel % 4];
   const backgroundColor = rgb
-    ? `rgb(${clamp(Math.round(rgb.r * customVariation[bubble.opacityLevel % 4]), 0, 255)} ${clamp(Math.round(rgb.g * customVariation[bubble.opacityLevel % 4]), 0, 255)} ${clamp(Math.round(rgb.b * customVariation[bubble.opacityLevel % 4]), 0, 255)})`
+    ? `rgb(${clamp(Math.round(rgb.r * brightnessMultiplier), 0, 255)}, ${clamp(Math.round(rgb.g * brightnessMultiplier), 0, 255)}, ${clamp(Math.round(rgb.b * brightnessMultiplier), 0, 255)})`
     : baseColor;
   
   return (
