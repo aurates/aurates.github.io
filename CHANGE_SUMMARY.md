@@ -1,58 +1,67 @@
-# Change Summary
+# Change Summary (Detailed)
 
-This document summarizes what was changed in this branch, how those changes affect performance, and what visual differences should be expected.
+This file explains exactly what changed, which security issues were addressed, and where code-level performance improvements were made.
 
-## 1) Security / Dependency Changes
+## 1) Security vulnerabilities addressed
 
-### What changed
-- Ran dependency maintenance commands:
+### What the vulnerabilities were
+- `npm audit` previously reported **2 high-severity vulnerabilities** in the dependency tree.
+- The vulnerable packages were transitive build-tool dependencies in the Vite ecosystem (not application business logic runtime code).
+- Remediation was done by updating lockfile-resolved versions via `npm audit fix`.
+
+### What was changed
+- File changed: `package-lock.json`
+- Action taken:
   - `npm install`
   - `npm audit`
   - `npm audit fix`
-- Updated `package-lock.json` to pull in patched transitive dependency versions.
-- The audit status moved from **2 high vulnerabilities** to **0 vulnerabilities**.
+- Current result:
+  - `npm audit --json` now reports:
+    - `high: 0`
+    - `critical: 0`
+    - `total: 0`
 
-### Performance impact
-- No direct application rendering logic was changed by this step.
-- Runtime performance should remain effectively the same from this lockfile-only update.
-- Some low-level package internals may differ due to patched versions, but no intentional performance tuning was included in this security update.
-
-### Visual difference
-- No intentional UI/UX visual changes from the dependency remediation itself.
-- The site should look the same as before this lockfile update.
-
----
-
-## 2) Bubble Background Rendering Optimization (from prior branch work)
-
-### What changed
-In `components/BubbleBackground.tsx`, the bubble styling pipeline was adjusted:
-- Brightness variation that previously relied on per-element compositing/filter work was moved toward precomputed color variation.
-- Added helper functions:
-  - `hexToRgb` to parse custom hex colors.
-  - `clamp` to keep computed RGB channels in valid range.
-- For custom bubble colors, a brightness multiplier is applied to RGB channels once for style computation, producing a direct `backgroundColor`.
-- Bubble elements keep `willChange: 'transform'` and use `contain: 'paint'` to improve paint isolation.
-
-### Performance impact
-- Reduced expensive paint/compositing pressure for animated bubble elements by favoring direct color output over filter-heavy variation.
-- Better browser rendering isolation for each animated bubble due to paint containment.
-- Expected outcome: smoother animation under load, reduced chance of frame drops on lower-end GPUs/CPUs, and more consistent animation timing during interaction.
-
-### Visual difference
-- Bubble brightness variation remains present, but may appear slightly more stable and uniform because it is derived from deterministic color math.
-- In custom-color mode, bubble shades can look a bit cleaner/less "filtered" and closer to natural tonal variants of the selected color.
-- Overall aesthetic remains the same (floating translucent bubbles), with no major layout or interaction changes introduced.
+### Impact
+- **Security:** reduced known dependency risk from high-severity findings to none currently reported by npm audit.
+- **Performance:** no direct performance optimization from this step (dependency remediation only).
+- **Visual:** no expected visual/UI change from lockfile remediation.
 
 ---
 
-## 3) Build/Verification Status
+## 2) Code-level performance changes
 
-### What was verified
-- `npm audit` now reports **0 vulnerabilities**.
-- `npm run build` completes successfully in the current branch state.
+### File and areas changed
+- Main file: `components/BubbleBackground.tsx`
+- Performance-relevant sections:
+  - `hexToRgb` helper (around lines 25–37)
+  - `clamp` helper (around line 23)
+  - memoized color conversion with `useMemo` (around line 64)
+  - computed `backgroundColor` from adjusted RGB channels (around lines 66–68)
+  - paint/composition hints:
+    - `willChange: 'transform'` (around line 82)
+    - `contain: 'paint'` (around line 84)
+  - reduced bubble count comment/setting for normal mode (line 96, `35`)
 
-### User-visible effect
-- No new feature changes from verification itself.
-- Confidence improved that the current branch is both buildable and free of known npm audit vulnerabilities at the time of update.
+### What changed in logic
+- Instead of relying on expensive visual filtering/compositing for shade variation, bubble shades are generated via direct RGB math.
+- Custom color parsing is done once per relevant input change using `useMemo`, reducing repeated conversion work.
+- Paint containment and transform hints were retained/applied to make animation rendering more isolated and predictable.
 
+### Why this improves performance
+- Less per-frame compositing/filter overhead during continuous bubble animation.
+- Smaller paint invalidation scope due to `contain: 'paint'`.
+- Better chance of smoother animation and fewer dropped frames on weaker devices/GPUs.
+
+### Visual difference from these code changes
+- Bubble effect remains visually similar (same overall floating-glass aesthetic).
+- Shade variation appears a bit cleaner/more uniform, especially for custom bubble colors.
+- No major layout, interaction flow, or component structure changes.
+
+---
+
+## 3) Current verification snapshot
+
+- `npm audit --json`: **0 vulnerabilities**
+- `npm run build`: currently fails due TypeScript deprecation config (`esModuleInterop: false` without `ignoreDeprecations: "6.0"` in `tsconfig.json`)
+
+This means the security remediation is complete, while build configuration still needs separate follow-up to satisfy current TypeScript behavior.
