@@ -258,7 +258,7 @@ const App: React.FC = () => {
 
               <div className="entrance-anim flex items-center gap-6 md:gap-8 leading-none">
                 <SocialLink 
-                  href="https://github.com/aurates" 
+                  href="https://github.com/aurates/aurates.github.io" 
                   icon={ICONS.GITHUB} 
                   label="GitHub" 
                   bgColor={isDarkMode ? 'bg-slate-800' : 'bg-slate-900'} 
