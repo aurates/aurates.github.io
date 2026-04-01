@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect, useState, memo } from 'react';
+import React, { useRef, useEffect, useState, memo, useMemo } from 'react';
 
 interface BubbleBackgroundProps {
   isDarkMode: boolean;
@@ -19,6 +19,22 @@ interface BubbleData {
   colorIndex: number;
   opacityLevel: number;
 }
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const hexToRgb = (hex: string) => {
+  const normalized = hex.replace('#', '');
+  const value = normalized.length === 3
+    ? normalized.split('').map((char) => `${char}${char}`).join('')
+    : normalized;
+  if (!/^[0-9a-fA-F]{6}$/.test(value)) return null;
+  const int = Number.parseInt(value, 16);
+  return {
+    r: (int >> 16) & 255,
+    g: (int >> 8) & 255,
+    b: int & 255,
+  };
+};
 
 // Memoized bubble component to prevent re-renders
 const Bubble = memo<{
@@ -43,10 +59,13 @@ const Bubble = memo<{
   
   const opacity = opacityLevels[bubble.opacityLevel % 4];
   
-  // Add subtle color variation for custom colors using filters
-  const filter = useCustom 
-    ? `hue-rotate(${(bubble.opacityLevel - 2) * 8}deg) brightness(${1 + (bubble.opacityLevel - 1) * 0.15}) contrast(1.1)`
-    : 'none';
+  // Precompute equivalent variation directly in color to avoid per-frame filter compositing cost
+  const brightnessMultipliers = [0.85, 1, 1.1, 1.2];
+  const rgb = useMemo(() => (useCustom ? hexToRgb(baseColor) : null), [useCustom, baseColor]);
+  const brightnessMultiplier = brightnessMultipliers[bubble.opacityLevel % 4];
+  const backgroundColor = rgb
+    ? `rgb(${clamp(Math.round(rgb.r * brightnessMultiplier), 0, 255)}, ${clamp(Math.round(rgb.g * brightnessMultiplier), 0, 255)}, ${clamp(Math.round(rgb.b * brightnessMultiplier), 0, 255)})`
+    : baseColor;
   
   return (
     <div
@@ -58,11 +77,11 @@ const Bubble = memo<{
         top: `${bubble.top}%`,
         animationDuration: `${bubble.duration}s`,
         animationDelay: `${bubble.delay}s`,
-        backgroundColor: baseColor,
+        backgroundColor,
         opacity,
-        filter,
         willChange: 'transform',
         animationPlayState: isPaused ? 'paused' : 'running',
+        contain: 'paint',
       }}
     />
   );
