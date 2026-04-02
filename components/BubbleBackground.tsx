@@ -90,7 +90,7 @@ const BubbleBackground: React.FC<BubbleBackgroundProps> = memo(({ isDarkMode, is
       return { id: i, size, right, top, duration, delay, colorIndex: i, opacityLevel };
     });
     setKey(k => k + 1);
-  }, [isDarkMode, isSurprise]);
+  }, [isSurprise]);
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
